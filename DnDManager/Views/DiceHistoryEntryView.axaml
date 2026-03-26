@@ -8,10 +8,20 @@
     <UserControl.Resources>
         <conv:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
         <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
-        <conv:NaturalRollColorConverter x:Key="NatRollColor" />
-        <conv:NatRollFontWeightConverter x:Key="NatRollFontWeight" />
-        <conv:NaturalRollBackgroundConverter x:Key="NatRollBg" />
     </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.nat1">
+            <Setter Property="Foreground" Value="{DynamicResource DnDNat1Brush}" />
+            <Setter Property="Background" Value="{DynamicResource DnDNat1Bg}" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="TextBlock.nat20">
+            <Setter Property="Foreground" Value="{DynamicResource DnDNat20Brush}" />
+            <Setter Property="Background" Value="{DynamicResource DnDNat20Bg}" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+    </UserControl.Styles>
 
     <Border BorderBrush="{DynamicResource DnDBorderBrush}"
             BorderThickness="0,0,0,1"
@@ -69,38 +79,16 @@
                                             <TextBlock Text="{Binding DisplayFirstRoll}"
                                                        FontWeight="{Binding FirstIsChosen, Converter={StaticResource BoolToFontWeight}}"
                                                        Opacity="{Binding FirstIsChosen, Converter={StaticResource BoolToOpacity}}"
-                                                       Padding="2,0">
-                                                <TextBlock.Foreground>
-                                                    <MultiBinding Converter="{StaticResource NatRollColor}">
-                                                        <Binding Path="FirstIsNat1" />
-                                                        <Binding Path="FirstIsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.Foreground>
-                                                <TextBlock.Background>
-                                                    <MultiBinding Converter="{StaticResource NatRollBg}">
-                                                        <Binding Path="FirstIsNat1" />
-                                                        <Binding Path="FirstIsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.Background>
-                                            </TextBlock>
+                                                       Classes.nat1="{Binding FirstIsNat1}"
+                                                       Classes.nat20="{Binding FirstIsNat20}"
+                                                       Padding="2,0" />
                                             <TextBlock Text="-" Foreground="{DynamicResource DnDLabelForeground}" />
                                             <TextBlock Text="{Binding DisplaySecondRoll}"
                                                        FontWeight="{Binding SecondIsChosen, Converter={StaticResource BoolToFontWeight}}"
                                                        Opacity="{Binding SecondIsChosen, Converter={StaticResource BoolToOpacity}}"
-                                                       Padding="2,0">
-                                                <TextBlock.Foreground>
-                                                    <MultiBinding Converter="{StaticResource NatRollColor}">
-                                                        <Binding Path="SecondIsNat1" />
-                                                        <Binding Path="SecondIsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.Foreground>
-                                                <TextBlock.Background>
-                                                    <MultiBinding Converter="{StaticResource NatRollBg}">
-                                                        <Binding Path="SecondIsNat1" />
-                                                        <Binding Path="SecondIsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.Background>
-                                            </TextBlock>
+                                                       Classes.nat1="{Binding SecondIsNat1}"
+                                                       Classes.nat20="{Binding SecondIsNat20}"
+                                                       Padding="2,0" />
                                         </StackPanel>
 
                                         <!-- Normal (non-adv/dis) display -->
@@ -108,26 +96,9 @@
                                                     Spacing="2"
                                                     IsVisible="{Binding SecondRoll, Converter={x:Static ObjectConverters.IsNull}}">
                                             <TextBlock Text="{Binding DisplayValue}"
-                                                       Padding="2,0">
-                                                <TextBlock.Foreground>
-                                                    <MultiBinding Converter="{StaticResource NatRollColor}">
-                                                        <Binding Path="IsNat1" />
-                                                        <Binding Path="IsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.Foreground>
-                                                <TextBlock.Background>
-                                                    <MultiBinding Converter="{StaticResource NatRollBg}">
-                                                        <Binding Path="IsNat1" />
-                                                        <Binding Path="IsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.Background>
-                                                <TextBlock.FontWeight>
-                                                    <MultiBinding Converter="{StaticResource NatRollFontWeight}">
-                                                        <Binding Path="IsNat1" />
-                                                        <Binding Path="IsNat20" />
-                                                    </MultiBinding>
-                                                </TextBlock.FontWeight>
-                                            </TextBlock>
+                                                       Classes.nat1="{Binding IsNat1}"
+                                                       Classes.nat20="{Binding IsNat20}"
+                                                       Padding="2,0" />
                                             <!-- Rerolled indicator for Halfling Luck -->
                                             <TextBlock Text="{Binding OriginalRoll, StringFormat='(was {0})'}"
                                                        IsVisible="{Binding WasRerolled}"
