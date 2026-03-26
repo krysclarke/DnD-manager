@@ -23,7 +23,13 @@ public partial class WebServerViewModel : ObservableObject {
     private bool _isQrCodeVisible;
 
     [ObservableProperty]
+    private bool _isEnablePromptVisible;
+
+    [ObservableProperty]
     private Bitmap? _qrCodeImage;
+
+    public Func<bool>? IsWebInterfaceEnabled { get; set; }
+    public Action? RequestEnableWebInterface { get; set; }
 
     public WebServerViewModel(
         IWebServerService webServerService,
@@ -56,6 +62,11 @@ public partial class WebServerViewModel : ObservableObject {
 
     [RelayCommand]
     private void ShowQrCode() {
+        if (IsWebInterfaceEnabled != null && !IsWebInterfaceEnabled()) {
+            IsEnablePromptVisible = true;
+            return;
+        }
+
         if (!_networkService.HasLanConnectivity()) {
             NetworkError = "No network connectivity detected. The web interface will be available once a LAN connection is established.";
             IsQrCodeVisible = false;
@@ -76,5 +87,29 @@ public partial class WebServerViewModel : ObservableObject {
     [RelayCommand]
     private void HideQrCode() {
         IsQrCodeVisible = false;
+    }
+
+    [RelayCommand]
+    private void EnableWebInterface() {
+        IsEnablePromptVisible = false;
+        RequestEnableWebInterface?.Invoke();
+
+        // Auto-show QR once the server finishes starting
+        void OnRunning(bool running) {
+            if (!running) return;
+            _webServerService.RunningChanged -= OnRunning;
+            ShowQrCode();
+        }
+
+        if (_webServerService.IsRunning) {
+            ShowQrCode();
+        } else {
+            _webServerService.RunningChanged += OnRunning;
+        }
+    }
+
+    [RelayCommand]
+    private void HideEnablePrompt() {
+        IsEnablePromptVisible = false;
     }
 }

@@ -47,6 +47,10 @@ public class App : Application {
             mainVm.SettingsVm.WebServerVm = webServerVm;
             mainVm.EncounterTrackerVm.WebServerVm = webServerVm;
 
+            // Wire enable callbacks for QR button prompt
+            webServerVm.IsWebInterfaceEnabled = () => mainVm.SettingsVm.IsWebInterfaceEnabled;
+            webServerVm.RequestEnableWebInterface = () => mainVm.SettingsVm.IsWebInterfaceEnabled = true;
+
             // Create broadcast service
             _broadcastService = new EncounterBroadcastService(
                 mainVm.EncounterTrackerVm,
@@ -58,9 +62,17 @@ public class App : Application {
             mainVm.SettingsVm.WebThemeChanged += () => _broadcastService.BroadcastThemeChange();
             mainVm.SettingsVm.WebUiScaleChanged += () => _broadcastService.BroadcastScaleChange();
 
-            // Set state provider and start web server
+            // Set state provider (server started on-demand via toggle)
             _webServerService.SetStateProvider(() => _broadcastService.BuildFullState());
-            _ = StartWebServerAsync(_webServerService, _broadcastService);
+
+            // Wire web interface enable/disable toggle
+            mainVm.SettingsVm.WebInterfaceEnabledChanged += enabled => {
+                if (enabled) {
+                    _ = StartWebServerAsync(_webServerService, _broadcastService, campaignRepository);
+                } else {
+                    _ = StopWebServerAsync(_webServerService);
+                }
+            };
 
             desktop.MainWindow = new MainWindow {
                 DataContext = mainVm
@@ -82,14 +94,30 @@ public class App : Application {
 
     private static async Task StartWebServerAsync(
         WebServerService webServerService,
-        EncounterBroadcastService broadcastService) {
+        EncounterBroadcastService broadcastService,
+        ICampaignRepository campaignRepository) {
         try {
-            await webServerService.StartAsync();
+            var portStr = await campaignRepository.LoadSettingAsync("webServerPort");
+            var preferredPort = int.TryParse(portStr, out var p) ? p : 0;
+
+            await webServerService.StartAsync(preferredPort);
+
+            if (webServerService.Port != preferredPort)
+                _ = campaignRepository.SaveSettingAsync("webServerPort", webServerService.Port.ToString());
+
             if (webServerService.HubContext != null)
                 broadcastService.SetHubContext(webServerService.HubContext);
         } catch (Exception ex) {
             // Web server failure shouldn't crash the app
             Console.Error.WriteLine($"Failed to start web server: {ex.Message}");
+        }
+    }
+
+    private static async Task StopWebServerAsync(WebServerService webServerService) {
+        try {
+            await webServerService.StopAsync();
+        } catch (Exception ex) {
+            Console.Error.WriteLine($"Failed to stop web server: {ex.Message}");
         }
     }
 }

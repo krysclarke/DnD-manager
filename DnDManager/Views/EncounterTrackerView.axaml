@@ -154,5 +154,31 @@
                 </StackPanel>
             </Border>
         </Border>
+
+        <!-- Web Interface Enable Prompt Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding WebServerVm.IsEnablePromptVisible}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="24"
+                    MaxWidth="360"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <StackPanel Spacing="12" HorizontalAlignment="Center">
+                    <TextBlock Text="Web interface is disabled."
+                               FontSize="16" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Spacing="8"
+                                HorizontalAlignment="Center">
+                        <Button Content="Enable"
+                                Command="{Binding WebServerVm.EnableWebInterfaceCommand}"
+                                MinWidth="80" HorizontalContentAlignment="Center" />
+                        <Button Content="Close"
+                                Command="{Binding WebServerVm.HideEnablePromptCommand}"
+                                MinWidth="80" HorizontalContentAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </UserControl>

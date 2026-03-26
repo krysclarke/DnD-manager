@@ -6,6 +6,6 @@ public interface IWebServerService : IAsyncDisposable {
     bool IsRunning { get; }
     event Action<string>? UrlChanged;
     event Action<bool>? RunningChanged;
-    Task StartAsync();
+    Task StartAsync(int preferredPort = 0);
     Task StopAsync();
 }

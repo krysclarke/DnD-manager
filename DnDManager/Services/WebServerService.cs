@@ -33,12 +33,12 @@ public class WebServerService : IWebServerService {
         _stateProvider = stateProvider;
     }
 
-    public async Task StartAsync() {
+    public async Task StartAsync(int preferredPort = 0) {
         if (IsRunning) return;
 
         var lanIp = _networkService.GetLanIpAddress();
         var cert = GenerateSelfSignedCert(lanIp);
-        Port = SelectRandomPort();
+        Port = SelectPort(preferredPort);
 
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.ConfigureKestrel(options => {
@@ -109,13 +109,35 @@ public class WebServerService : IWebServerService {
         return Results.Content(content, contentType);
     }
 
-    private static int SelectRandomPort() {
-        // Bind to port 0 to let the OS assign a free port, then read it
+    private static readonly int[] CandidatePorts =
+        [8443, 5443, 1443, 2443, 3443, 4443, 6443, 7443, 9443];
+
+    private static int SelectPort(int preferredPort) {
+        if (preferredPort > 0 && IsPortAvailable(preferredPort))
+            return preferredPort;
+
+        foreach (var port in CandidatePorts) {
+            if (IsPortAvailable(port))
+                return port;
+        }
+
+        // Fall back to OS-assigned random port
         using var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
         listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var randomPort = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
-        return port;
+        return randomPort;
+    }
+
+    private static bool IsPortAvailable(int port) {
+        try {
+            using var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, port);
+            listener.Start();
+            listener.Stop();
+            return true;
+        } catch (System.Net.Sockets.SocketException) {
+            return false;
+        }
     }
 
     private static X509Certificate2 GenerateSelfSignedCert(IPAddress? lanIp) {

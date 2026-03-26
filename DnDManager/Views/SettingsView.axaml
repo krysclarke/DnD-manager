@@ -85,74 +85,84 @@
             <StackPanel Spacing="8">
                 <TextBlock Text="Web Interface" FontSize="18" FontWeight="Bold" />
 
-                <!-- Server URL + QR Code -->
-                <StackPanel Orientation="Horizontal" Spacing="12"
-                            VerticalAlignment="Center"
-                            IsVisible="{Binding WebServerVm.IsRunning}">
-                    <TextBlock Text="{Binding WebServerVm.ServerUrl}"
-                               VerticalAlignment="Center" FontFamily="Consolas,monospace" />
-                    <Button Content="Show QR Code"
-                            Command="{Binding WebServerVm.ShowQrCodeCommand}"
-                            MinHeight="36" Padding="12,4" />
-                </StackPanel>
+                <!-- Enable/Disable Toggle -->
+                <CheckBox IsChecked="{Binding IsWebInterfaceEnabled}"
+                          Content="Enable Web Interface"
+                          FontSize="14" />
 
-                <!-- Network error -->
-                <TextBlock Text="{Binding WebServerVm.NetworkError}"
-                           Foreground="{DynamicResource DnDWarningForeground}"
-                           FontWeight="SemiBold" TextWrapping="Wrap"
-                           IsVisible="{Binding WebServerVm.NetworkError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <!-- Web settings (disabled when web interface is off) -->
+                <StackPanel Spacing="8" IsEnabled="{Binding IsWebInterfaceEnabled}">
 
-                <!-- QR Code overlay -->
-                <Border IsVisible="{Binding WebServerVm.IsQrCodeVisible}"
-                        Background="{DynamicResource DnDDialogBg}"
-                        CornerRadius="8" Padding="16"
-                        HorizontalAlignment="Center">
-                    <StackPanel Spacing="8" HorizontalAlignment="Center">
-                        <Image Source="{Binding WebServerVm.QrCodeImage}"
-                               MaxWidth="300" MaxHeight="300"
-                               Stretch="Uniform" />
+                    <!-- Server URL + QR Code -->
+                    <StackPanel Orientation="Horizontal" Spacing="12"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding WebServerVm.IsRunning}">
                         <TextBlock Text="{Binding WebServerVm.ServerUrl}"
-                                   HorizontalAlignment="Center"
-                                   FontFamily="Consolas,monospace" />
-                        <Button Content="Close"
-                                Command="{Binding WebServerVm.HideQrCodeCommand}"
-                                HorizontalAlignment="Center"
-                                MinWidth="80" />
+                                   VerticalAlignment="Center" FontFamily="Consolas,monospace" />
+                        <Button Content="Show QR Code"
+                                Command="{Binding WebServerVm.ShowQrCodeCommand}"
+                                MinHeight="36" Padding="12,4" />
                     </StackPanel>
-                </Border>
 
-                <!-- Web Theme -->
-                <TextBlock Text="Web Theme" FontSize="14" FontWeight="SemiBold"
-                           Margin="0,8,0,0" />
-                <ComboBox ItemsSource="{Binding AvailableThemes}"
-                          SelectedItem="{Binding SelectedWebTheme}"
-                          MinWidth="200">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="models:AppTheme">
-                            <TextBlock Text="{Binding DisplayName}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    <!-- Network error -->
+                    <TextBlock Text="{Binding WebServerVm.NetworkError}"
+                               Foreground="{DynamicResource DnDWarningForeground}"
+                               FontWeight="SemiBold" TextWrapping="Wrap"
+                               IsVisible="{Binding WebServerVm.NetworkError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-                <!-- Web UI Scale -->
-                <TextBlock Text="Web UI Scale" FontSize="14" FontWeight="SemiBold"
-                           Margin="0,8,0,0" />
-                <StackPanel Orientation="Horizontal" Spacing="12"
-                            VerticalAlignment="Center">
-                    <Button Content="-" Command="{Binding DecreaseWebScaleCommand}"
-                            MinWidth="36" MinHeight="36"
-                            HorizontalContentAlignment="Center" />
-                    <Slider Value="{Binding WebUiScale}"
-                            Minimum="0.5" Maximum="2.0"
-                            TickFrequency="0.25"
-                            IsSnapToTickEnabled="True"
-                            MinWidth="250" VerticalAlignment="Center" />
-                    <Button Content="+" Command="{Binding IncreaseWebScaleCommand}"
-                            MinWidth="36" MinHeight="36"
-                            HorizontalContentAlignment="Center" />
-                    <TextBlock Text="{Binding WebUiScaleDisplay}"
-                               FontWeight="SemiBold" FontSize="16"
-                               VerticalAlignment="Center" MinWidth="48" />
+                    <!-- QR Code overlay -->
+                    <Border IsVisible="{Binding WebServerVm.IsQrCodeVisible}"
+                            Background="{DynamicResource DnDDialogBg}"
+                            CornerRadius="8" Padding="16"
+                            HorizontalAlignment="Center">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <Image Source="{Binding WebServerVm.QrCodeImage}"
+                                   MaxWidth="300" MaxHeight="300"
+                                   Stretch="Uniform" />
+                            <TextBlock Text="{Binding WebServerVm.ServerUrl}"
+                                       HorizontalAlignment="Center"
+                                       FontFamily="Consolas,monospace" />
+                            <Button Content="Close"
+                                    Command="{Binding WebServerVm.HideQrCodeCommand}"
+                                    HorizontalAlignment="Center"
+                                    MinWidth="80" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Web Theme -->
+                    <TextBlock Text="Web Theme" FontSize="14" FontWeight="SemiBold"
+                               Margin="0,8,0,0" />
+                    <ComboBox ItemsSource="{Binding AvailableThemes}"
+                              SelectedItem="{Binding SelectedWebTheme}"
+                              MinWidth="200">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:AppTheme">
+                                <TextBlock Text="{Binding DisplayName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- Web UI Scale -->
+                    <TextBlock Text="Web UI Scale" FontSize="14" FontWeight="SemiBold"
+                               Margin="0,8,0,0" />
+                    <StackPanel Orientation="Horizontal" Spacing="12"
+                                VerticalAlignment="Center">
+                        <Button Content="-" Command="{Binding DecreaseWebScaleCommand}"
+                                MinWidth="36" MinHeight="36"
+                                HorizontalContentAlignment="Center" />
+                        <Slider Value="{Binding WebUiScale}"
+                                Minimum="0.5" Maximum="2.0"
+                                TickFrequency="0.25"
+                                IsSnapToTickEnabled="True"
+                                MinWidth="250" VerticalAlignment="Center" />
+                        <Button Content="+" Command="{Binding IncreaseWebScaleCommand}"
+                                MinWidth="36" MinHeight="36"
+                                HorizontalContentAlignment="Center" />
+                        <TextBlock Text="{Binding WebUiScaleDisplay}"
+                                   FontWeight="SemiBold" FontSize="16"
+                                   VerticalAlignment="Center" MinWidth="48" />
+                    </StackPanel>
+
                 </StackPanel>
             </StackPanel>
 
