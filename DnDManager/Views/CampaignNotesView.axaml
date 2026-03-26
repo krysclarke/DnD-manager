@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             xmlns:controls="using:DnDManager.Controls"
+             x:Class="DnDManager.Views.CampaignNotesView"
+             x:DataType="vm:CampaignNotesViewModel">
+
+    <Border BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="0,1,0,0" Padding="8">
+        <DockPanel>
+            <!-- Save/Cancel buttons (docked bottom) -->
+            <StackPanel DockPanel.Dock="Bottom"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8"
+                        Margin="0,8,0,0"
+                        IsVisible="{Binding IsEditing}">
+                <Button Content="Save" Command="{Binding SaveCommand}" />
+                <Button Content="Cancel" Command="{Binding CancelCommand}" />
+            </StackPanel>
+
+            <Panel>
+                <!-- Rendered Markdown View -->
+                <ScrollViewer x:Name="MarkdownViewer"
+                              IsVisible="{Binding !IsEditing}"
+                              MinHeight="100">
+                    <controls:MarkdownRenderer Markdown="{Binding MarkdownText}" />
+                </ScrollViewer>
+
+                <!-- Placeholder when notes are empty -->
+                <TextBlock Text="Double-click here to add campaign notes (Markdown supported)"
+                           IsVisible="{Binding IsEmpty}"
+                           Opacity="0.5"
+                           FontStyle="Italic"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           IsHitTestVisible="False" />
+
+                <!-- Edit TextBox -->
+                <TextBox x:Name="EditTextBox"
+                         Text="{Binding MarkdownText}"
+                         CaretIndex="{Binding CaretPosition, Mode=TwoWay}"
+                         IsVisible="{Binding IsEditing}"
+                         AcceptsReturn="True"
+                         AcceptsTab="True"
+                         TextWrapping="Wrap"
+                         MinHeight="100"
+                         Watermark="Enter campaign notes (Markdown supported)..." />
+            </Panel>
+        </DockPanel>
+    </Border>
+</UserControl>

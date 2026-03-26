@@ -1,0 +1,146 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             xmlns:conv="using:DnDManager.Converters"
+             x:Class="DnDManager.Views.DiceHistoryEntryView"
+             x:DataType="vm:DiceHistoryEntryViewModel">
+
+    <UserControl.Resources>
+        <conv:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
+        <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
+        <conv:NaturalRollColorConverter x:Key="NatRollColor" />
+        <conv:NatRollFontWeightConverter x:Key="NatRollFontWeight" />
+        <conv:NaturalRollBackgroundConverter x:Key="NatRollBg" />
+    </UserControl.Resources>
+
+    <Border BorderBrush="{DynamicResource DnDBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="4,6"
+            Margin="0,0,0,2">
+        <StackPanel Spacing="2">
+            <!-- Timestamp -->
+            <TextBlock Text="{Binding TimestampText}"
+                       Foreground="{DynamicResource DnDLabelForeground}"
+                       FontSize="11" />
+
+            <!-- Invalid result -->
+            <StackPanel Orientation="Horizontal"
+                        Spacing="6"
+                        IsVisible="{Binding !IsValid}">
+                <TextBlock Text="INVALID"
+                           Foreground="{DynamicResource DnDErrorForeground}"
+                           FontWeight="Bold" />
+                <TextBlock Text="{Binding ErrorReason}"
+                           Foreground="{DynamicResource DnDErrorForeground}"
+                           FontStyle="Italic" />
+            </StackPanel>
+
+            <!-- Valid result: each part -->
+            <ItemsControl ItemsSource="{Binding Parts}"
+                          IsVisible="{Binding IsValid}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DicePartDisplayInfo">
+                        <ItemsControl ItemsSource="{Binding AllTokens}" Margin="8,2,0,2">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.DataTemplates>
+                                <!-- Plain text tokens (label, brackets, modifier) -->
+                                <DataTemplate DataType="vm:TextDisplayToken">
+                                    <TextBlock Text="{Binding Text}"
+                                               FontWeight="{Binding IsBold, Converter={StaticResource BoolToFontWeight}}"
+                                               Margin="2,0" />
+                                </DataTemplate>
+
+                                <!-- Roll display tokens -->
+                                <DataTemplate DataType="vm:DiceRollDisplayInfo">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" Margin="2,0">
+                                        <!-- Pair separator for advantage/disadvantage -->
+                                        <TextBlock Text="|"
+                                                   Foreground="{DynamicResource DnDLabelForeground}"
+                                                   Margin="2,0"
+                                                   IsVisible="{Binding ShowPairSeparator}" />
+                                        <!-- Advantage/Disadvantage display -->
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="4"
+                                                    IsVisible="{Binding SecondRoll, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <TextBlock Text="{Binding DisplayFirstRoll}"
+                                                       FontWeight="{Binding FirstIsChosen, Converter={StaticResource BoolToFontWeight}}"
+                                                       Opacity="{Binding FirstIsChosen, Converter={StaticResource BoolToOpacity}}"
+                                                       Padding="2,0">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{StaticResource NatRollColor}">
+                                                        <Binding Path="FirstIsNat1" />
+                                                        <Binding Path="FirstIsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                                <TextBlock.Background>
+                                                    <MultiBinding Converter="{StaticResource NatRollBg}">
+                                                        <Binding Path="FirstIsNat1" />
+                                                        <Binding Path="FirstIsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.Background>
+                                            </TextBlock>
+                                            <TextBlock Text="-" Foreground="{DynamicResource DnDLabelForeground}" />
+                                            <TextBlock Text="{Binding DisplaySecondRoll}"
+                                                       FontWeight="{Binding SecondIsChosen, Converter={StaticResource BoolToFontWeight}}"
+                                                       Opacity="{Binding SecondIsChosen, Converter={StaticResource BoolToOpacity}}"
+                                                       Padding="2,0">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{StaticResource NatRollColor}">
+                                                        <Binding Path="SecondIsNat1" />
+                                                        <Binding Path="SecondIsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                                <TextBlock.Background>
+                                                    <MultiBinding Converter="{StaticResource NatRollBg}">
+                                                        <Binding Path="SecondIsNat1" />
+                                                        <Binding Path="SecondIsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.Background>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!-- Normal (non-adv/dis) display -->
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="2"
+                                                    IsVisible="{Binding SecondRoll, Converter={x:Static ObjectConverters.IsNull}}">
+                                            <TextBlock Text="{Binding DisplayValue}"
+                                                       Padding="2,0">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{StaticResource NatRollColor}">
+                                                        <Binding Path="IsNat1" />
+                                                        <Binding Path="IsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                                <TextBlock.Background>
+                                                    <MultiBinding Converter="{StaticResource NatRollBg}">
+                                                        <Binding Path="IsNat1" />
+                                                        <Binding Path="IsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.Background>
+                                                <TextBlock.FontWeight>
+                                                    <MultiBinding Converter="{StaticResource NatRollFontWeight}">
+                                                        <Binding Path="IsNat1" />
+                                                        <Binding Path="IsNat20" />
+                                                    </MultiBinding>
+                                                </TextBlock.FontWeight>
+                                            </TextBlock>
+                                            <!-- Rerolled indicator for Halfling Luck -->
+                                            <TextBlock Text="{Binding OriginalRoll, StringFormat='(was {0})'}"
+                                                       IsVisible="{Binding WasRerolled}"
+                                                       Foreground="{DynamicResource DnDLabelForeground}"
+                                                       FontSize="10" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.DataTemplates>
+                        </ItemsControl>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
+</UserControl>

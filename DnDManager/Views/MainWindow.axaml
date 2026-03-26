@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DnDManager.ViewModels"
+        xmlns:views="using:DnDManager.Views"
+        x:Class="DnDManager.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        x:CompileBindings="True"
+        Title="DnD Manager"
+        Width="1400"
+        Height="900"
+        Background="{DynamicResource DnDSurface}">
+
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}"
+                x:Name="MainTabControl">
+        <TabItem Header="Encounter Tracker">
+            <LayoutTransformControl x:Name="EncounterScaleContainer">
+                <views:EncounterTrackerView DataContext="{Binding EncounterTrackerVm}" />
+            </LayoutTransformControl>
+        </TabItem>
+        <TabItem Header="Monster Manager">
+            <LayoutTransformControl x:Name="MonsterScaleContainer">
+                <views:MonsterManagerView DataContext="{Binding MonsterManagerVm}" />
+            </LayoutTransformControl>
+        </TabItem>
+        <TabItem Header="Settings">
+            <views:SettingsView DataContext="{Binding SettingsVm}" />
+        </TabItem>
+    </TabControl>
+
+</Window>

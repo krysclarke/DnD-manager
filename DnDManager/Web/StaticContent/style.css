@@ -1,0 +1,256 @@
+:root {
+    --surface: #1E1E1E;
+    --accent: #2D6CA3;
+    --accent-fg: #FFFFFF;
+    --muted: #888888;
+    --active-highlight: #333333;
+    --dialog-bg: #2D2D2D;
+    --overlay-bg: #1A1A1A;
+    --hp-green: #4CAF50;
+    --hp-yellow: #FFC107;
+    --hp-red: #F44336;
+    --text: #E0E0E0;
+    --border: #444444;
+    --ui-scale: 1;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--surface);
+    color: var(--text);
+    font-size: calc(16px * var(--ui-scale));
+    min-height: 100vh;
+}
+
+#app {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--dialog-bg);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+header h1 {
+    font-size: 1.25em;
+    font-weight: 600;
+    color: var(--text);
+}
+
+#round-info {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Character Cards */
+#character-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.character-card {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--dialog-bg);
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+    transition: background-color 0.2s, border-color 0.2s;
+    gap: 1rem;
+}
+
+.character-card.active {
+    background-color: var(--active-highlight);
+    border-left-color: var(--accent);
+}
+
+.character-card.pc {
+    border-left-color: var(--accent);
+}
+
+.character-card.active.pc {
+    border-left-color: var(--accent);
+    border-left-width: 6px;
+}
+
+.character-card.active.npc {
+    border-left-color: var(--accent);
+    border-left-width: 6px;
+}
+
+.character-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.character-name {
+    font-weight: 600;
+    font-size: 1.4em;
+}
+
+.character-type {
+    font-size: 0.8em;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.initiative-badge {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--overlay-bg);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1.1em;
+    color: var(--accent-fg);
+}
+
+.initiative-badge.no-init {
+    color: var(--muted);
+    font-size: 0.8em;
+}
+
+/* Health Bar */
+.health-bar-container {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.health-bar-track {
+    height: 12px;
+    background-color: var(--overlay-bg);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.health-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.health-bar-fill.green {
+    background-color: var(--hp-green);
+}
+
+.health-bar-fill.yellow {
+    background-color: var(--hp-yellow);
+}
+
+.health-bar-fill.red {
+    background-color: var(--hp-red);
+}
+
+/* Conditions */
+.conditions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.condition-tag {
+    font-size: 0.75em;
+    padding: 0.15rem 0.5rem;
+    background-color: var(--overlay-bg);
+    border-radius: 4px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+}
+
+/* Status Messages */
+.status-message {
+    text-align: center;
+    color: var(--muted);
+    padding: 3rem 1rem;
+    font-size: 1.1em;
+}
+
+/* Connection Status Bar */
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+    font-size: 0.8em;
+    color: var(--muted);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.connected {
+    background-color: var(--hp-green);
+}
+
+.dot.disconnected {
+    background-color: var(--hp-red);
+}
+
+.dot.reconnecting {
+    background-color: var(--hp-yellow);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Turn indicator arrow */
+.turn-indicator {
+    font-size: 1.2em;
+    color: var(--accent);
+    margin-right: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    #app {
+        padding: 0.5rem;
+    }
+
+    .character-card {
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .health-bar-container {
+        max-width: 180px;
+    }
+}

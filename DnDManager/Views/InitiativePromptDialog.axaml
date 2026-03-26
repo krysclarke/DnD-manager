@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             x:Class="DnDManager.Views.InitiativePromptDialog"
+             x:DataType="vm:EncounterTrackerViewModel">
+
+    <StackPanel Spacing="12" MinWidth="350">
+        <TextBlock Text="Enter PC Initiatives"
+                   FontSize="18" FontWeight="Bold"
+                   HorizontalAlignment="Center" />
+
+        <ItemsControl ItemsSource="{Binding InitiativePcs}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CharacterViewModel">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Name}"
+                                   VerticalAlignment="Center"
+                                   FontSize="14" />
+                        <NumericUpDown Grid.Column="1"
+                                       Value="{Binding Initiative}"
+                                       Minimum="1" Maximum="30"
+                                       FormatString="0"
+                                       MinWidth="100" />
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Button Content="Confirm"
+                Command="{Binding ConfirmInitiativesCommand}"
+                HorizontalAlignment="Center"
+                MinWidth="100"
+                Margin="0,8,0,0" />
+    </StackPanel>
+</UserControl>

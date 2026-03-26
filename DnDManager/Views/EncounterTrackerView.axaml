@@ -1,0 +1,158 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             xmlns:views="using:DnDManager.Views"
+             x:Class="DnDManager.Views.EncounterTrackerView"
+             x:DataType="vm:EncounterTrackerViewModel">
+
+    <Grid x:Name="OuterGrid" RowDefinitions="Auto,*">
+        <!-- Row 0: Toolbar spanning full width -->
+        <WrapPanel Grid.Row="0" Orientation="Horizontal"
+                   Margin="8" Grid.ColumnSpan="3">
+            <WrapPanel.Styles>
+                <Style Selector="WrapPanel > Button">
+                    <Setter Property="Margin" Value="0,0,8,4" />
+                </Style>
+                <Style Selector="WrapPanel > TextBlock">
+                    <Setter Property="Margin" Value="0,0,8,4" />
+                </Style>
+            </WrapPanel.Styles>
+            <Button Content="Add PC" Command="{Binding AddPcCommand}" />
+            <Button Content="Add NPC" Command="{Binding AddNpcCommand}" />
+            <Button Content="Save"
+                    Command="{Binding SaveEncounterCommand}"
+                    CommandParameter="{Binding $parent[Window]}" />
+            <Button Content="Open"
+                    Command="{Binding OpenEncounterCommand}"
+                    CommandParameter="{Binding $parent[Window]}" />
+            <Button Content="Import"
+                    Command="{Binding ImportEncounterCommand}"
+                    CommandParameter="{Binding $parent[Window]}" />
+            <Button Content="Close"
+                    Command="{Binding CloseEncounterCommand}" />
+            <Button Content="{Binding EncounterButtonText}"
+                    Command="{Binding ToggleEncounterCommand}" />
+            <Button Content="◀ Prev"
+                    Command="{Binding PreviousTurnCommand}"
+                    IsVisible="{Binding IsEncounterActive}" />
+            <Button Content="Next ▶"
+                    Command="{Binding NextTurnCommand}"
+                    IsVisible="{Binding IsEncounterActive}" />
+            <TextBlock Text="{Binding RoundNumber, StringFormat='Round {0}'}"
+                       IsVisible="{Binding IsEncounterActive}"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold" />
+            <Button Content="QR"
+                    Command="{Binding WebServerVm.ShowQrCodeCommand}"
+                    IsVisible="{Binding WebServerVm, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    ToolTip.Tip="Show web interface QR code" />
+        </WrapPanel>
+
+        <!-- Row 1: Main content area -->
+        <Grid x:Name="ContentGrid" Grid.Row="1" ColumnDefinitions="3*,Auto,*">
+            <!-- Left column: character grid, splitter, campaign notes -->
+            <Grid x:Name="InnerGrid" Grid.Column="0" RowDefinitions="3*,Auto,*">
+                <!-- Row 0: Character grid + NPC side panel -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    <views:CharacterGridView Grid.Column="0" DataContext="{Binding}" />
+                    <views:NpcOverlayView Grid.Column="1" DataContext="{Binding NpcOverlayVm}" />
+                </Grid>
+
+                <!-- Row 1: Horizontal splitter -->
+                <GridSplitter Grid.Row="1" Height="4"
+                              ResizeDirection="Rows"
+                              Background="{DynamicResource DnDBorderBrush}" />
+
+                <!-- Row 2: Campaign notes -->
+                <views:CampaignNotesView Grid.Row="2"
+                                         DataContext="{Binding CampaignNotesVm}"
+                                         MinHeight="150" />
+            </Grid>
+
+            <!-- Vertical splitter between left content and dice roller -->
+            <GridSplitter Grid.Column="1" Width="4"
+                          ResizeDirection="Columns"
+                          Background="{DynamicResource DnDBorderBrush}" />
+
+            <!-- Right column: Dice roller (full height) -->
+            <views:DiceRollerView Grid.Column="2"
+                                  DataContext="{Binding DiceRollerVm}" />
+        </Grid>
+
+        <!-- Add Character Dialog Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding IsAddDialogOpen}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="400" MaxHeight="500"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <views:AddCharacterDialog DataContext="{Binding PendingAddDialogVm}" />
+            </Border>
+        </Border>
+
+        <!-- Initiative Prompt Dialog Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding IsInitiativeDialogOpen}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="500" MaxHeight="600"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <views:InitiativePromptDialog DataContext="{Binding}" />
+            </Border>
+        </Border>
+
+        <!-- Save Confirmation Dialog Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding IsSaveConfirmationOpen}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="400" MaxHeight="200"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <views:SaveConfirmationDialog DataContext="{Binding}" />
+            </Border>
+        </Border>
+
+        <!-- Import Options Dialog Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding IsImportDialogOpen}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="400" MaxHeight="300"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <views:ImportOptionsDialog DataContext="{Binding}" />
+            </Border>
+        </Border>
+
+        <!-- QR Code Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding WebServerVm.IsQrCodeVisible}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="400" MaxHeight="500"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <Image Source="{Binding WebServerVm.QrCodeImage}"
+                           MaxWidth="300" MaxHeight="300"
+                           Stretch="Uniform" />
+                    <TextBlock Text="{Binding WebServerVm.ServerUrl}"
+                               HorizontalAlignment="Center"
+                               FontFamily="Consolas,monospace" />
+                    <Button Content="Close"
+                            Command="{Binding WebServerVm.HideQrCodeCommand}"
+                            HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+                            MinWidth="80" />
+                </StackPanel>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

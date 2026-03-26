@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             xmlns:conv="using:DnDManager.Converters"
+             x:Class="DnDManager.Views.CharacterGridView"
+             x:DataType="vm:EncounterTrackerViewModel">
+
+    <UserControl.Resources>
+        <conv:BoolToBrushConverter x:Key="ActiveBrushConverter"
+                                   TrueResourceKey="DnDActiveHighlight"
+                                   FallbackTrueBrush="#40FFD700"
+                                   FalseBrush="Transparent" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.IsSharedSizeScope="True">
+        <ItemsControl ItemsSource="{Binding Characters}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CharacterViewModel">
+                    <Button Command="{Binding $parent[ItemsControl].((vm:EncounterTrackerViewModel)DataContext).SelectCharacterCommand}"
+                            CommandParameter="{Binding}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Background="{Binding IsActive, Converter={StaticResource ActiveBrushConverter}}"
+                            Padding="4,2" Margin="0,1"
+                            CornerRadius="4">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="{DynamicResource DnDHoverHighlight}" />
+                            </Style>
+                        </Button.Styles>
+
+                        <Grid>
+                            <!-- Shared size columns -->
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Name" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Init" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="PP" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="AC" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="HP" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Indicators" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Conditions" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Notes" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Remove" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Name: show "Name (PlayerName)" for PCs -->
+                            <Panel Grid.Column="0" MinWidth="160" Margin="4,0">
+                                <TextBlock VerticalAlignment="Center"
+                                           IsVisible="{Binding IsPc}">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} ({1})">
+                                            <Binding Path="Name" />
+                                            <Binding Path="PlayerName" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Name}"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsNpc}" />
+                            </Panel>
+
+                            <!-- Initiative -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        Margin="4,0" VerticalAlignment="Center">
+                                <TextBlock Text="Init: " Foreground="{DynamicResource DnDLabelForeground}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Initiative, TargetNullValue='-'}"
+                                           MinWidth="24" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- PP (PCs only) -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                        Margin="4,0" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsPc}">
+                                <TextBlock Text="PP: " Foreground="{DynamicResource DnDLabelForeground}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PassivePerception}"
+                                           MinWidth="24" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- AC -->
+                            <StackPanel Grid.Column="3" Orientation="Horizontal"
+                                        Margin="4,0" VerticalAlignment="Center">
+                                <TextBlock Text="AC: " Foreground="{DynamicResource DnDLabelForeground}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ArmorClass}"
+                                           MinWidth="24" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- HP (NPCs only) -->
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="4,0"
+                                        VerticalAlignment="Center" IsVisible="{Binding IsNpc}">
+                                <TextBlock Text="HP: " Foreground="{DynamicResource DnDLabelForeground}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0}/{1}">
+                                            <Binding Path="CurrentHitPoints" />
+                                            <Binding Path="MaxHitPoints" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- Legendary/Reaction indicators -->
+                            <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="2"
+                                        Margin="4,0" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsNpc}">
+                                <Border Background="{DynamicResource DnDHoverHighlight}" CornerRadius="2" Padding="3,0"
+                                        IsVisible="{Binding HasLegendaryActions}"
+                                        ToolTip.Tip="Has Legendary Actions">
+                                    <TextBlock Text="L" FontSize="10" FontWeight="Bold" />
+                                </Border>
+                                <Border Background="{DynamicResource DnDHoverHighlight}" CornerRadius="2" Padding="3,0"
+                                        IsVisible="{Binding HasReactions}"
+                                        ToolTip.Tip="Has Reactions">
+                                    <TextBlock Text="R" FontSize="10" FontWeight="Bold" />
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Conditions -->
+                            <TextBox Grid.Column="6"
+                                     Text="{Binding Conditions}"
+                                     Watermark="Conditions"
+                                     MinWidth="100" Margin="4,0"
+                                     VerticalAlignment="Center" />
+
+                            <!-- Notes -->
+                            <TextBox Grid.Column="7"
+                                     Text="{Binding Notes}"
+                                     Watermark="Notes"
+                                     MinWidth="80" Margin="4,0"
+                                     VerticalAlignment="Center" />
+
+                            <!-- Remove button -->
+                            <Button Grid.Column="8"
+                                    Content="X"
+                                    Padding="4,0" MinWidth="24" MinHeight="24"
+                                    Margin="4,0"
+                                    VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Command="{Binding $parent[ItemsControl].((vm:EncounterTrackerViewModel)DataContext).RemoveCharacterCommand}"
+                                    CommandParameter="{Binding}" />
+                        </Grid>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

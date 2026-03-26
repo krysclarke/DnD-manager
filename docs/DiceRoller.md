@@ -1,0 +1,19 @@
+# Dice roller
+- Allow text-entry using the standard D&D dice notation and include a timestamped history log including time & date.
+- Only accept dice with 2,3,4,6,8,10,12,20 and 100 sides.
+- Use ">" and "<" as a suffix to indicate a roll with advantage or disadvantage, respectively.  Also, ("3d20>+4" means "3x ((1d20>)+4)").
+- Use "hd20" instead of "d20" to indicate a roll with Halfling Luck.
+- Multiple dice rolls can be entered, using commas to separate each part (e.g. "3d6+2,4d4-1")
+- The quantifier is optional, assumed '1' if missing.
+- Multiple modifiers are not permitted.
+- Ignore all whitespace within raw input string.
+- Provide a button to roll the dice, but also accept the enter/return key to do the same.
+- In the history log, for valid input:
+  - Show the dice string (without any whitespace)
+  - For 20- and 100- sided dice, show the rolls without a total
+  - For 2- through 12- sided dice, show total first, then the individual rolls and modifier
+  - For rolls with adv/dis, display both rolls, emphasising the 'winning' roll and de-emphasising the other.
+  - For all 20-sided dice rolls, emphasis natural '1' and '20' rolls.
+- In the history log, for invalid input:
+  - Show the dice string (without any whitespace)
+  - Display "INVALID", with the reason (e.g. "invalid dice size", "multiple modifiers")

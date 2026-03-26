@@ -1,0 +1,250 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             xmlns:models="using:DnDManager.Models"
+             x:Class="DnDManager.Views.NpcOverlayView"
+             x:DataType="vm:NpcOverlayViewModel"
+             IsVisible="{Binding IsVisible}">
+
+    <Border Background="{DynamicResource DnDDialogBg}" CornerRadius="8"
+            Padding="16" Margin="4,0,0,0"
+            VerticalAlignment="Stretch"
+            MinWidth="280" MaxWidth="400">
+        <DockPanel>
+            <!-- Header (outside scroll) -->
+            <Grid ColumnDefinitions="*,Auto" DockPanel.Dock="Top" Margin="0,0,0,12">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding NpcName}"
+                           FontSize="18" FontWeight="Bold" />
+                <Button Grid.Column="1"
+                        Content="X"
+                        Command="{Binding CloseCommand}"
+                        Padding="4,0" MinWidth="28" MinHeight="28"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center" />
+            </Grid>
+
+            <!-- Stats (outside scroll) -->
+            <StackPanel Orientation="Horizontal" Spacing="16" DockPanel.Dock="Top" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="AC:" FontWeight="Bold" />
+                    <TextBlock Text="{Binding NpcAc}" />
+                </StackPanel>
+                <Panel>
+                    <!-- Display mode: double-click to edit -->
+                    <StackPanel Orientation="Horizontal" Spacing="4"
+                                IsVisible="{Binding !SelectedNpc.IsHpEditMode}">
+                        <TextBlock Text="HP:" FontWeight="Bold" />
+                        <TextBlock DoubleTapped="OnHpDoubleTapped" Cursor="Hand">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}/{1}">
+                                    <Binding Path="NpcCurrentHp" />
+                                    <Binding Path="NpcMaxHp" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!-- Edit mode: - [delta] + -->
+                    <StackPanel Orientation="Horizontal" Spacing="4"
+                                IsVisible="{Binding SelectedNpc.IsHpEditMode}">
+                        <TextBlock Text="HP:" FontWeight="Bold" VerticalAlignment="Center" />
+                        <Button Content="-" Command="{Binding SelectedNpc.DecrementHpCommand}"
+                                Padding="4,0" MinWidth="24" MinHeight="24"
+                                VerticalAlignment="Center" />
+                        <TextBox Text="{Binding SelectedNpc.HpDeltaText, UpdateSourceTrigger=PropertyChanged}"
+                                 Watermark="#"
+                                 MinWidth="40" MaxWidth="60" Margin="2,0"
+                                 VerticalAlignment="Center"
+                                 VerticalContentAlignment="Center" />
+                        <Button Content="+" Command="{Binding SelectedNpc.IncrementHpCommand}"
+                                Padding="4,0" MinWidth="24" MinHeight="24"
+                                VerticalAlignment="Center" />
+                    </StackPanel>
+                </Panel>
+            </StackPanel>
+
+            <!-- Separator (outside scroll) -->
+            <Separator DockPanel.Dock="Top" Margin="0,0,0,12" />
+
+            <!-- Scrollable content -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+            <!-- Attacks -->
+            <TextBlock Text="Attacks" FontWeight="Bold" FontSize="14" />
+
+            <!-- Multiattack -->
+            <Border Padding="6" Margin="0,2" CornerRadius="4"
+                    Background="{DynamicResource DnDHoverHighlight}"
+                    IsVisible="{Binding NpcMultiattackDescription, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Multiattack" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding NpcMultiattackDescription}"
+                               TextWrapping="Wrap" FontSize="12" Opacity="0.8" />
+                </StackPanel>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding NpcAttacks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:Attack">
+                        <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                Background="{DynamicResource DnDHoverHighlight}">
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="{Binding AttackType}" FontSize="11" Opacity="0.6" />
+                                            <TextBlock Text="{Binding ReachDisplay}" FontSize="11" Opacity="0.6" />
+                                            <TextBlock Text="{Binding TotalAverageDamage, StringFormat='avg {0}'}"
+                                                       FontSize="11" Opacity="0.6" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Content="Roll Atk"
+                                            Margin="4,0" Padding="8,4"
+                                            Command="{Binding $parent[ItemsControl].((vm:NpcOverlayViewModel)DataContext).RollAttackCommand}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Grid.Column="2"
+                                            Content="Roll Dmg"
+                                            Padding="8,4"
+                                            Command="{Binding $parent[ItemsControl].((vm:NpcOverlayViewModel)DataContext).RollDamageCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                                <TextBlock Text="{Binding EffectText}"
+                                           FontStyle="Italic" Opacity="0.6"
+                                           TextWrapping="Wrap" FontSize="11" Margin="0,2,0,0"
+                                           IsVisible="{Binding EffectText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- No attacks message -->
+            <TextBlock Text="No attacks available"
+                       IsVisible="{Binding !NpcAttacks.Count}"
+                       Foreground="{DynamicResource DnDLabelForeground}" FontStyle="Italic" />
+
+            <!-- Special Abilities -->
+            <Separator IsVisible="{Binding NpcSpecialAbilities.Count}" Margin="0,8,0,0" />
+            <TextBlock Text="Special Abilities" FontWeight="Bold" FontSize="14"
+                       IsVisible="{Binding NpcSpecialAbilities.Count}" />
+            <ItemsControl ItemsSource="{Binding NpcSpecialAbilities}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:NamedAbility">
+                        <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                Background="{DynamicResource DnDHoverHighlight}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                           FontSize="12" Opacity="0.8" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Non-Attack Actions -->
+            <Separator IsVisible="{Binding NpcNonAttackActions.Count}" Margin="0,8,0,0" />
+            <TextBlock Text="Actions" FontWeight="Bold" FontSize="14"
+                       IsVisible="{Binding NpcNonAttackActions.Count}" />
+            <ItemsControl ItemsSource="{Binding NpcNonAttackActions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:NamedAbility">
+                        <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                Background="{DynamicResource DnDHoverHighlight}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                           FontSize="12" Opacity="0.8" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Bonus Actions -->
+            <Separator IsVisible="{Binding NpcBonusActions.Count}" Margin="0,8,0,0" />
+            <TextBlock Text="Bonus Actions" FontWeight="Bold" FontSize="14"
+                       IsVisible="{Binding NpcBonusActions.Count}" />
+            <ItemsControl ItemsSource="{Binding NpcBonusActions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:NamedAbility">
+                        <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                Background="{DynamicResource DnDHoverHighlight}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                           FontSize="12" Opacity="0.8" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Reactions -->
+            <Separator IsVisible="{Binding NpcReactions.Count}" Margin="0,8,0,0" />
+            <StackPanel Orientation="Horizontal" Spacing="8"
+                        IsVisible="{Binding NpcReactions.Count}">
+                <TextBlock Text="Reactions" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" />
+                <CheckBox Content="Used" IsChecked="{Binding NpcReactionUsed, Mode=OneWay}"
+                          Command="{Binding ToggleReactionCommand}"
+                          VerticalAlignment="Center" FontSize="12" />
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding NpcReactions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:NamedAbility">
+                        <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                Background="{DynamicResource DnDHoverHighlight}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                           FontSize="12" Opacity="0.8" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Legendary Actions -->
+            <Separator IsVisible="{Binding NpcLegendaryActions.Count}" Margin="0,8,0,0" />
+            <StackPanel IsVisible="{Binding NpcLegendaryActions.Count}" Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Legendary Actions" FontWeight="Bold" FontSize="14"
+                               VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" FontSize="12" Opacity="0.8">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="NpcLegendaryActionsRemaining" />
+                                <Binding Path="NpcLegendaryActionBudget" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <Button Content="Use" Padding="6,2" MinWidth="0" FontSize="11"
+                            Command="{Binding UseLegendaryActionCommand}" />
+                    <Button Content="Undo" Padding="6,2" MinWidth="0" FontSize="11"
+                            Command="{Binding UndoLegendaryActionCommand}" />
+                </StackPanel>
+                <TextBlock Text="{Binding NpcLegendaryDescription}"
+                           TextWrapping="Wrap" FontStyle="Italic" FontSize="11" Opacity="0.7"
+                           IsVisible="{Binding NpcLegendaryDescription, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding NpcLegendaryActions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:NamedAbility">
+                        <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                Background="{DynamicResource DnDHoverHighlight}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                           FontSize="12" Opacity="0.8" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

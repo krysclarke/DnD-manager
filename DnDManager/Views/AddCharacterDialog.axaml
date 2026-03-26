@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             xmlns:models="using:DnDManager.Models"
+             x:Class="DnDManager.Views.AddCharacterDialog"
+             x:DataType="vm:AddCharacterDialogViewModel">
+
+    <StackPanel Spacing="12" MinWidth="320">
+        <TextBlock Text="Add Character" FontSize="18" FontWeight="Bold"
+                   HorizontalAlignment="Center" />
+
+        <!-- PC / NPC Toggle -->
+        <StackPanel Orientation="Horizontal" Spacing="16"
+                    HorizontalAlignment="Center">
+            <RadioButton Content="PC"
+                         IsChecked="{Binding IsPc}"
+                         GroupName="CharType" />
+            <RadioButton Content="NPC"
+                         IsChecked="{Binding !IsPc}"
+                         GroupName="CharType" />
+        </StackPanel>
+
+        <!-- Bestiary dropdown (NPC only, when entries available) -->
+        <StackPanel Spacing="4"
+                    IsVisible="{Binding !IsPc}">
+            <TextBlock Text="From Bestiary" />
+            <ComboBox ItemsSource="{Binding AvailableBestiaryEntries}"
+                      SelectedItem="{Binding SelectedBestiaryEntry}"
+                      PlaceholderText="Select from bestiary or enter manually..."
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:BestiaryEntry">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="{Binding ChallengeRating, StringFormat='(CR {0})'}"
+                                       Opacity="0.6" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Character Name -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Character Name" />
+            <TextBox Text="{Binding CharacterName}"
+                     Watermark="Enter character name" />
+        </StackPanel>
+
+        <!-- Player Name (PC only) -->
+        <StackPanel Spacing="4" IsVisible="{Binding IsPc}">
+            <TextBlock Text="Player Name" />
+            <TextBox Text="{Binding PlayerName}"
+                     Watermark="Enter player name" />
+        </StackPanel>
+
+        <!-- PP (PC only) -->
+        <StackPanel Spacing="4" IsVisible="{Binding IsPc}">
+            <TextBlock Text="Passive Perception" />
+            <NumericUpDown Value="{Binding PassivePerception}"
+                           Minimum="1" Maximum="30"
+                           FormatString="0" />
+        </StackPanel>
+
+        <!-- PI (PC only) -->
+        <StackPanel Spacing="4" IsVisible="{Binding IsPc}">
+            <TextBlock Text="Passive Investigation" />
+            <NumericUpDown Value="{Binding PassiveInvestigation}"
+                           Minimum="1" Maximum="30"
+                           FormatString="0" />
+        </StackPanel>
+
+        <!-- AC -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Armor Class" />
+            <NumericUpDown Value="{Binding ArmorClass}"
+                           Minimum="1" Maximum="30"
+                           FormatString="0" />
+        </StackPanel>
+
+        <!-- HP (NPC only) -->
+        <StackPanel Spacing="4" IsVisible="{Binding !IsPc}">
+            <TextBlock Text="Hit Points" />
+            <NumericUpDown Value="{Binding HitPoints}"
+                           Minimum="1" Maximum="9999"
+                           FormatString="0" />
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" Spacing="12"
+                    HorizontalAlignment="Center" Margin="0,8,0,0">
+            <Button Content="Add" MinWidth="80"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding $parent[UserControl;1].((vm:EncounterTrackerViewModel)DataContext).ConfirmAddCharacterCommand}" />
+            <Button Content="Cancel" MinWidth="80"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding $parent[UserControl;1].((vm:EncounterTrackerViewModel)DataContext).CancelAddCharacterCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

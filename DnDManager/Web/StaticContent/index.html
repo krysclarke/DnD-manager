@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DnD Manager - Encounter</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="app">
+        <header id="header">
+            <h1>Encounter Tracker</h1>
+            <div id="round-info" class="hidden">
+                <span>Round <span id="round-number">0</span></span>
+            </div>
+        </header>
+
+        <main id="character-list">
+            <div id="no-characters" class="status-message">
+                <p>No characters in encounter.</p>
+            </div>
+        </main>
+
+        <div id="connection-status" class="status-bar">
+            <span id="status-dot" class="dot disconnected"></span>
+            <span id="status-text">Connecting...</span>
+        </div>
+    </div>
+
+    <script src="/signalr.min.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html>
