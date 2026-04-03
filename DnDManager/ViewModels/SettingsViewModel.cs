@@ -87,22 +87,22 @@ public partial class SettingsViewModel : ObservableObject {
 
     [RelayCommand]
     private void IncreaseScale() {
-        UiScale = Math.Min(2.0, Math.Round((UiScale + 0.25) * 4) / 4);
+        UiScale = Math.Min(2.0, UiScale + 0.25);
     }
 
     [RelayCommand]
     private void DecreaseScale() {
-        UiScale = Math.Max(0.5, Math.Round((UiScale - 0.25) * 4) / 4);
+        UiScale = Math.Max(0.5, UiScale - 0.25);
     }
 
     [RelayCommand]
     private void IncreaseWebScale() {
-        WebUiScale = Math.Min(2.0, Math.Round((WebUiScale + 0.25) * 4) / 4);
+        WebUiScale = Math.Min(2.0, WebUiScale + 0.25);
     }
 
     [RelayCommand]
     private void DecreaseWebScale() {
-        WebUiScale = Math.Max(0.5, Math.Round((WebUiScale - 0.25) * 4) / 4);
+        WebUiScale = Math.Max(0.5, WebUiScale - 0.25);
     }
 
     public void LoadSettings(string? themeId, double uiScale, double webUiScale,
