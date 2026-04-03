@@ -31,8 +31,13 @@ public partial class SettingsViewModel : ObservableObject {
     [ObservableProperty]
     private string? _contrastWarning;
 
+    [ObservableProperty]
+    private bool _isBuiltInThemeSelected = true;
+
     public string UiScaleDisplay => $"{UiScale:0.00}x";
     public string WebUiScaleDisplay => $"{WebUiScale:0.00}x";
+
+    public ThemeEditorViewModel ThemeEditor { get; }
 
     public WebServerViewModel? WebServerVm { get; set; }
 
@@ -45,9 +50,41 @@ public partial class SettingsViewModel : ObservableObject {
         _campaignRepository = campaignRepository;
         _selectedTheme = _themeService.CurrentTheme;
         _selectedWebTheme = _themeService.CurrentTheme;
+
+        ThemeEditor = new ThemeEditorViewModel(themeService, campaignRepository);
+        ThemeEditor.ThemeCreated += OnThemeCreated;
+        ThemeEditor.ThemeDeleted += OnThemeDeleted;
+    }
+
+    private void OnThemeCreated(AppTheme theme) {
+        OnPropertyChanged(nameof(AvailableThemes));
+        _isLoading = true;
+        SelectedTheme = theme;
+        _isLoading = false;
+    }
+
+    private void OnThemeDeleted(AppTheme fallback) {
+        OnPropertyChanged(nameof(AvailableThemes));
+        _isLoading = true;
+        SelectedTheme = fallback;
+        _isLoading = false;
+        IsBuiltInThemeSelected = true;
+    }
+
+    [RelayCommand]
+    private void CloneCurrentTheme() {
+        ThemeEditor.CreateNewThemeCommand.Execute(null);
     }
 
     partial void OnSelectedThemeChanged(AppTheme value) {
+        IsBuiltInThemeSelected = value.IsBuiltIn;
+
+        if (!value.IsBuiltIn) {
+            ThemeEditor.LoadFromTheme(value);
+        } else {
+            ThemeEditor.IsEditorVisible = false;
+        }
+
         _themeService.ApplyTheme(value.Id);
         if (!_isLoading) {
             _ = _campaignRepository.SaveSettingAsync("theme", value.Id);

@@ -1,0 +1,245 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             x:Class="DnDManager.Views.ThemeEditorView"
+             x:DataType="vm:ThemeEditorViewModel">
+
+    <StackPanel Spacing="16">
+
+        <!-- Theme Name & Delete -->
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <TextBlock Text="Theme Name:" VerticalAlignment="Center" />
+            <TextBox Text="{Binding ThemeName}" MinWidth="200" />
+            <Button Content="Delete Theme" Command="{Binding DeleteThemeCommand}"
+                    Foreground="{DynamicResource DnDErrorForeground}" />
+        </StackPanel>
+
+        <!-- Base Variant Toggle -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="Base:" VerticalAlignment="Center" />
+            <ToggleSwitch IsChecked="{Binding IsDarkBase}"
+                          OnContent="Dark" OffContent="Light" />
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Colors Section -->
+        <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="Colors" FontSize="{DynamicResource DnDHeadingFontSize}"
+                           FontWeight="Bold" VerticalAlignment="Center" />
+                <ToggleSwitch IsChecked="{Binding IsAdvancedColorMode}"
+                              OnContent="Advanced" OffContent="Grouped"
+                              VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Grouped Color View -->
+            <StackPanel Spacing="4" IsVisible="{Binding !IsAdvancedColorMode}">
+                <ItemsControl ItemsSource="{Binding ColorGroups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ColorGroupViewModel">
+                            <Expander Header="{Binding Name}" IsExpanded="False"
+                                      Margin="0,0,0,4">
+                                <StackPanel Spacing="6" Margin="8,4">
+                                    <ItemsControl ItemsSource="{Binding Colors}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ColorEntryViewModel">
+                                                <StackPanel Orientation="Horizontal" Spacing="8"
+                                                            Margin="0,2">
+                                                    <TextBlock Text="{Binding Label}"
+                                                               MinWidth="160"
+                                                               VerticalAlignment="Center" />
+                                                    <Border Width="28" Height="28"
+                                                            CornerRadius="4"
+                                                            BorderThickness="1"
+                                                            BorderBrush="{DynamicResource DnDBorderBrush}">
+                                                        <Border.Background>
+                                                            <SolidColorBrush Color="{Binding ColorValue}" />
+                                                        </Border.Background>
+                                                    </Border>
+                                                    <TextBox Text="{Binding HexValue}"
+                                                             MinWidth="100" MaxWidth="100"
+                                                             VerticalAlignment="Center"
+                                                             FontFamily="{DynamicResource DnDMonospaceFont}" />
+                                                    <ColorPicker Color="{Binding ColorValue}"
+                                                                 Padding="4,2" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!-- Advanced Color View (flat list of all colors) -->
+            <StackPanel Spacing="4" IsVisible="{Binding IsAdvancedColorMode}">
+                <ItemsControl ItemsSource="{Binding ColorGroups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ColorGroupViewModel">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource DnDLabelForeground}"
+                                           Margin="0,8,0,2" />
+                                <ItemsControl ItemsSource="{Binding Colors}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ColorEntryViewModel">
+                                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                                        Margin="0,2">
+                                                <TextBlock Text="{Binding Label}"
+                                                           MinWidth="160"
+                                                           VerticalAlignment="Center" />
+                                                <Border Width="28" Height="28"
+                                                        CornerRadius="4"
+                                                        BorderThickness="1"
+                                                        BorderBrush="{DynamicResource DnDBorderBrush}">
+                                                    <Border.Background>
+                                                        <SolidColorBrush Color="{Binding ColorValue}" />
+                                                    </Border.Background>
+                                                </Border>
+                                                <TextBox Text="{Binding HexValue}"
+                                                         MinWidth="100" MaxWidth="100"
+                                                         VerticalAlignment="Center"
+                                                         FontFamily="{DynamicResource DnDMonospaceFont}" />
+                                                <ColorPicker Color="{Binding ColorValue}"
+                                                             Padding="4,2" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Fonts Section -->
+        <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="Fonts" FontSize="{DynamicResource DnDHeadingFontSize}"
+                           FontWeight="Bold" VerticalAlignment="Center" />
+                <ToggleSwitch IsChecked="{Binding IsAdvancedFontMode}"
+                              OnContent="Advanced" OffContent="Basic"
+                              VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Basic Font View -->
+            <StackPanel Spacing="8" IsVisible="{Binding !IsAdvancedFontMode}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="Font:" MinWidth="80" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding AvailableFonts}"
+                              SelectedItem="{Binding GlobalFont}"
+                              MinWidth="200" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="Base Size:" MinWidth="80" VerticalAlignment="Center" />
+                    <Slider Value="{Binding GlobalFontSize}"
+                            Minimum="8" Maximum="28"
+                            TickFrequency="1" IsSnapToTickEnabled="True"
+                            MinWidth="200" VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="SemiBold">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0:F0}px">
+                                <Binding Path="GlobalFontSize" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Advanced Font View -->
+            <StackPanel Spacing="8" IsVisible="{Binding IsAdvancedFontMode}">
+                <!-- UI Text -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="UI Text" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ComboBox ItemsSource="{Binding AvailableFonts}"
+                                  SelectedItem="{Binding UiFont}"
+                                  MinWidth="200" />
+                        <Slider Value="{Binding UiFontSize}"
+                                Minimum="8" Maximum="28"
+                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                MinWidth="150" VerticalAlignment="Center" />
+                        <TextBlock VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0:F0}px">
+                                    <Binding Path="UiFontSize" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Headings -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Headings" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ComboBox ItemsSource="{Binding AvailableFonts}"
+                                  SelectedItem="{Binding HeadingFont}"
+                                  MinWidth="200" />
+                        <Slider Value="{Binding HeadingFontSize}"
+                                Minimum="10" Maximum="36"
+                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                MinWidth="150" VerticalAlignment="Center" />
+                        <TextBlock VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0:F0}px">
+                                    <Binding Path="HeadingFontSize" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Monospace -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Monospace / Code" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ComboBox ItemsSource="{Binding AvailableFonts}"
+                                  SelectedItem="{Binding MonospaceFont}"
+                                  MinWidth="200" />
+                        <Slider Value="{Binding MonospaceFontSize}"
+                                Minimum="8" Maximum="28"
+                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                MinWidth="150" VerticalAlignment="Center" />
+                        <TextBlock VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0:F0}px">
+                                    <Binding Path="MonospaceFontSize" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Dice -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Dice Results" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ComboBox ItemsSource="{Binding AvailableFonts}"
+                                  SelectedItem="{Binding DiceFont}"
+                                  MinWidth="200" />
+                        <Slider Value="{Binding DiceFontSize}"
+                                Minimum="8" Maximum="28"
+                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                MinWidth="150" VerticalAlignment="Center" />
+                        <TextBlock VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0:F0}px">
+                                    <Binding Path="DiceFontSize" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

@@ -8,7 +8,9 @@
         Title="DnD Manager"
         Width="1400"
         Height="900"
-        Background="{DynamicResource DnDSurface}">
+        Background="{DynamicResource DnDSurface}"
+        FontFamily="{DynamicResource DnDUiFont}"
+        FontSize="{DynamicResource DnDUiFontSize}">
 
     <TabControl SelectedIndex="{Binding SelectedTabIndex}"
                 x:Name="MainTabControl">

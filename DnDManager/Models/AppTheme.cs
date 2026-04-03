@@ -32,4 +32,17 @@ public class AppTheme {
     public required Color Surface { get; init; }
     public required Color Accent { get; init; }
     public required Color AccentForeground { get; init; }
+
+    // Fonts
+    public string UiFont { get; init; } = "Default";
+    public double UiFontSize { get; init; } = 14;
+    public string HeadingFont { get; init; } = "Default";
+    public double HeadingFontSize { get; init; } = 18;
+    public string MonospaceFont { get; init; } = "Cascadia Mono, Consolas, monospace";
+    public double MonospaceFontSize { get; init; } = 14;
+    public string DiceFont { get; init; } = "Default";
+    public double DiceFontSize { get; init; } = 14;
+
+    // Custom theme flag
+    public bool IsBuiltIn { get; init; } = true;
 }

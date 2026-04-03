@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -8,10 +9,17 @@ namespace DnDManager.Services;
 
 public class ThemeService : IThemeService {
     private const string SystemThemeId = "system";
+    private const string CustomThemesKey = "customThemes";
+    private const string DefaultFontFallback = "avares://Avalonia.Fonts.Inter/Assets#Inter";
+    private const string DefaultMonoFallback = "Cascadia Mono, Consolas, monospace";
     private ResourceDictionary? _themeResources;
     private bool _subscribedToSystemTheme;
 
-    public IReadOnlyList<AppTheme> AvailableThemes { get; } = new List<AppTheme> {
+    private readonly ObservableCollection<AppTheme> _allThemes = new();
+
+    public IReadOnlyList<AppTheme> AvailableThemes => _allThemes;
+
+    private static readonly List<AppTheme> BuiltInThemes = new() {
         new() {
             Id = SystemThemeId,
             DisplayName = "System",
@@ -166,7 +174,9 @@ public class ThemeService : IThemeService {
     public event Action? ScaleChanged;
 
     public ThemeService() {
-        CurrentTheme = AvailableThemes[0];
+        foreach (var theme in BuiltInThemes)
+            _allThemes.Add(theme);
+        CurrentTheme = _allThemes[0];
     }
 
     public void ApplyTheme(string themeId) {
@@ -275,6 +285,9 @@ public class ThemeService : IThemeService {
             AddBrush(_themeResources, "DnDWarningForeground", Color.Parse("#9D5D00"));
         }
 
+        // Default font resources for system theme
+        AddFontResources(_themeResources, CurrentTheme);
+
         app.Resources.MergedDictionaries.Add(_themeResources);
     }
 
@@ -328,13 +341,83 @@ public class ThemeService : IThemeService {
         AddBrush(_themeResources, "DnDErrorForeground", theme.Nat1Brush);
         AddBrush(_themeResources, "DnDWarningForeground", theme.Accent);
 
+        AddFontResources(_themeResources, theme);
+
         app.Resources.MergedDictionaries.Add(_themeResources);
+    }
+
+    public void ApplyThemeLive(AppTheme theme) {
+        var app = Application.Current;
+        if (app == null) return;
+
+        CurrentTheme = theme;
+        UnsubscribeFromSystemTheme(app);
+        ApplyCustomTheme(app, theme);
+        ThemeChanged?.Invoke();
     }
 
     public void SetScale(double scale) {
         CurrentScale = Math.Clamp(scale, 0.5, 2.0);
         ScaleChanged?.Invoke();
     }
+
+    public async Task LoadCustomThemesAsync(ICampaignRepository repository) {
+        var json = await repository.LoadSettingAsync(CustomThemesKey);
+        if (string.IsNullOrEmpty(json)) return;
+
+        try {
+            var dtos = CustomThemeDto.DeserializeList(json);
+            foreach (var dto in dtos) {
+                var theme = dto.ToAppTheme();
+                if (_allThemes.All(t => t.Id != theme.Id))
+                    _allThemes.Add(theme);
+            }
+        } catch {
+            // Corrupted data — skip loading custom themes
+        }
+    }
+
+    public async Task SaveCustomThemesAsync(ICampaignRepository repository) {
+        var customThemes = _allThemes
+            .Where(t => !t.IsBuiltIn)
+            .Select(CustomThemeDto.FromAppTheme)
+            .ToList();
+        var json = CustomThemeDto.SerializeList(customThemes);
+        await repository.SaveSettingAsync(CustomThemesKey, json);
+    }
+
+    public void AddCustomTheme(AppTheme theme) {
+        _allThemes.Add(theme);
+    }
+
+    public void UpdateCustomTheme(AppTheme theme) {
+        for (int i = 0; i < _allThemes.Count; i++) {
+            if (_allThemes[i].Id == theme.Id) {
+                _allThemes[i] = theme;
+                return;
+            }
+        }
+    }
+
+    public void DeleteCustomTheme(string themeId) {
+        var theme = _allThemes.FirstOrDefault(t => t.Id == themeId && !t.IsBuiltIn);
+        if (theme != null)
+            _allThemes.Remove(theme);
+    }
+
+    private static void AddFontResources(ResourceDictionary dict, AppTheme theme) {
+        dict["DnDUiFont"] = ResolveFontFamily(theme.UiFont, DefaultFontFallback);
+        dict["DnDUiFontSize"] = theme.UiFontSize;
+        dict["DnDHeadingFont"] = ResolveFontFamily(theme.HeadingFont, DefaultFontFallback);
+        dict["DnDHeadingFontSize"] = theme.HeadingFontSize;
+        dict["DnDMonospaceFont"] = ResolveFontFamily(theme.MonospaceFont, DefaultMonoFallback);
+        dict["DnDMonospaceFontSize"] = theme.MonospaceFontSize;
+        dict["DnDDiceFont"] = ResolveFontFamily(theme.DiceFont, DefaultFontFallback);
+        dict["DnDDiceFontSize"] = theme.DiceFontSize;
+    }
+
+    private static FontFamily ResolveFontFamily(string fontName, string fallback) =>
+        fontName == "Default" ? new FontFamily(fallback) : new FontFamily(fontName);
 
     private static void AddBrush(ResourceDictionary dict, string key, Color color) {
         dict[key] = new SolidColorBrush(color);

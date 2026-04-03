@@ -31,7 +31,12 @@ public class MarkdownRenderer : ContentControl {
         return new SolidColorBrush(Color.Parse(fallbackHex));
     }
 
-    private static readonly FontFamily MonospaceFont = new("Cascadia Mono, Consolas, monospace");
+    private static FontFamily GetMonospaceFont() {
+        if (Application.Current?.Resources.TryGetResource("DnDMonospaceFont", null, out var resource) == true
+            && resource is FontFamily font)
+            return font;
+        return new FontFamily("Cascadia Mono, Consolas, monospace");
+    }
 
     public string? Markdown {
         get => GetValue(MarkdownProperty);
@@ -119,7 +124,7 @@ public class MarkdownRenderer : ContentControl {
             Margin = new Thickness(0, 4),
             Child = new SelectableTextBlock {
                 Text = text,
-                FontFamily = MonospaceFont,
+                FontFamily = GetMonospaceFont(),
                 Foreground = GetBrush("DnDCodeText", "#E0E0E0"),
                 TextWrapping = TextWrapping.Wrap
             }
@@ -276,7 +281,7 @@ public class MarkdownRenderer : ContentControl {
 
             case CodeInline code: {
                 var run = new Run(code.Content) {
-                    FontFamily = MonospaceFont,
+                    FontFamily = GetMonospaceFont(),
                     Foreground = GetBrush("DnDCodeText", "#E0E0E0"),
                     Background = GetBrush("DnDInlineCodeBg", "#2D2D2D")
                 };

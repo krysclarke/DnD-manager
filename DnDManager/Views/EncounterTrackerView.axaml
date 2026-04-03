@@ -146,7 +146,7 @@
                            Stretch="Uniform" />
                     <TextBlock Text="{Binding WebServerVm.ServerUrl}"
                                HorizontalAlignment="Center"
-                               FontFamily="Consolas,monospace" />
+                               FontFamily="{DynamicResource DnDMonospaceFont}" />
                     <Button Content="Close"
                             Command="{Binding WebServerVm.HideQrCodeCommand}"
                             HorizontalAlignment="Center" HorizontalContentAlignment="Center"

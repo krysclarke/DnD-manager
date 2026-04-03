@@ -46,6 +46,9 @@ public partial class MainWindowViewModel : ObservableObject {
     public async Task InitializeAsync() {
         await _campaignRepository.InitializeAsync(string.Empty);
 
+        // Load custom themes before resolving saved theme ID
+        await ThemeService.LoadCustomThemesAsync(_campaignRepository);
+
         // Load theme/scale settings before UI renders
         var themeId = await _campaignRepository.LoadSettingAsync("theme");
         var uiScaleStr = await _campaignRepository.LoadSettingAsync("uiScale");
