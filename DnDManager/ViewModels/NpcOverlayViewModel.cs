@@ -26,6 +26,14 @@ public partial class NpcOverlayViewModel : ObservableObject {
     public string NpcLegendaryDescription => SelectedNpc?.LegendaryDescription ?? string.Empty;
     public List<NamedAbility> NpcReactions => SelectedNpc?.Reactions ?? [];
     public List<NamedAbility> NpcBonusActions => SelectedNpc?.BonusActions ?? [];
+    public List<MonsterSpellInfo> NpcSpells => SelectedNpc?.Spells ?? [];
+    public List<SpellSlotLevel> NpcSpellSlots => SelectedNpc?.SpellSlots ?? [];
+
+    private List<SpellLevelGroup>? _cachedSpellGroups;
+    public List<SpellLevelGroup> NpcSpellGroups => _cachedSpellGroups ??= BuildSpellGroups();
+    public int NpcSpellSaveDc => SelectedNpc?.SpellSaveDc ?? 0;
+    public int NpcSpellAttackBonus => SelectedNpc?.SpellAttackBonus ?? 0;
+    public bool NpcHasSpells => SelectedNpc?.HasSpells ?? false;
     public int NpcLegendaryActionBudget => SelectedNpc?.LegendaryActionBudget ?? 0;
     public int NpcLegendaryActionsRemaining => SelectedNpc?.LegendaryActionsRemaining ?? 0;
     public bool NpcReactionUsed => SelectedNpc?.ReactionUsed ?? false;
@@ -61,6 +69,13 @@ public partial class NpcOverlayViewModel : ObservableObject {
         OnPropertyChanged(nameof(NpcLegendaryActionBudget));
         OnPropertyChanged(nameof(NpcLegendaryActionsRemaining));
         OnPropertyChanged(nameof(NpcReactionUsed));
+        OnPropertyChanged(nameof(NpcSpells));
+        OnPropertyChanged(nameof(NpcSpellSlots));
+        OnPropertyChanged(nameof(NpcSpellSaveDc));
+        OnPropertyChanged(nameof(NpcSpellAttackBonus));
+        OnPropertyChanged(nameof(NpcHasSpells));
+        _cachedSpellGroups = null;
+        OnPropertyChanged(nameof(NpcSpellGroups));
     }
 
     private void OnNpcPropertyChanged(object? sender, PropertyChangedEventArgs e) {
@@ -91,6 +106,85 @@ public partial class NpcOverlayViewModel : ObservableObject {
 
     [RelayCommand]
     private void ToggleReaction() => SelectedNpc?.ToggleReactionCommand.Execute(null);
+
+    [RelayCommand]
+    private void ResetAllSpellSlots() {
+        SelectedNpc?.ResetAllSpellSlotsCommand.Execute(null);
+        OnPropertyChanged(nameof(NpcSpellSlots));
+        OnPropertyChanged(nameof(NpcSpellGroups));
+    }
+
+    [RelayCommand]
+    private void RollSpellAttack() {
+        var bonus = SelectedNpc?.SpellAttackBonus ?? 0;
+        _diceRollerVm.SetInputAndRoll($"d20+{bonus}");
+    }
+
+    [RelayCommand]
+    private void RollSpellDamage(MonsterSpellInfo spellInfo) {
+        var dice = spellInfo.EffectiveDamageDice;
+        if (!string.IsNullOrEmpty(dice))
+            _diceRollerVm.SetInputAndRoll(dice);
+    }
+
+    private List<SpellLevelGroup> BuildSpellGroups() {
+        if (SelectedNpc is null || !SelectedNpc.HasSpells)
+            return [];
+
+        var spells = SelectedNpc.Spells;
+        var slots = SelectedNpc.SpellSlots;
+
+        var slotsByLevel = slots.ToDictionary(s => s.Level);
+        var levelsWithSlots = slots
+            .Where(s => s.TotalSlots > 0)
+            .Select(s => s.Level)
+            .ToHashSet();
+
+        var groups = new Dictionary<int, SpellLevelGroup>();
+
+        foreach (var spellInfo in spells) {
+            var baseLevel = spellInfo.UsageType == SpellUsageType.SlotBased
+                ? spellInfo.SlotLevel
+                : spellInfo.Spell.Level;
+
+            EnsureGroup(groups, baseLevel, slotsByLevel);
+            groups[baseLevel].Spells.Add(spellInfo);
+
+            // Add upcast copies at higher slot levels for slot-based leveled spells
+            if (spellInfo.UsageType == SpellUsageType.SlotBased && spellInfo.Spell.Level > 0) {
+                foreach (var higherLevel in levelsWithSlots.Where(l => l > baseLevel).OrderBy(l => l)) {
+                    EnsureGroup(groups, higherLevel, slotsByLevel);
+                    groups[higherLevel].Spells.Add(CreateUpcastCopy(spellInfo, higherLevel));
+                }
+            }
+        }
+
+        return groups.Values.OrderBy(g => g.Level).ToList();
+    }
+
+    private static void EnsureGroup(Dictionary<int, SpellLevelGroup> groups, int level,
+        Dictionary<int, SpellSlotLevel> slotsByLevel) {
+        if (groups.ContainsKey(level)) return;
+        groups[level] = new SpellLevelGroup {
+            Level = level,
+            SlotInfo = slotsByLevel.GetValueOrDefault(level)
+        };
+    }
+
+    private static MonsterSpellInfo CreateUpcastCopy(MonsterSpellInfo source, int targetLevel) {
+        var copy = new MonsterSpellInfo {
+            Spell = source.Spell,
+            SlotLevel = targetLevel,
+            IsPreCast = source.IsPreCast,
+            UsageType = source.UsageType,
+            UsesPerDay = source.UsesPerDay,
+            CasterLevel = source.CasterLevel,
+            IsUpcastCopy = true,
+            UpcastLabel = "\u2191"
+        };
+        copy.SelectedCastLevel = targetLevel;
+        return copy;
+    }
 
     [RelayCommand]
     private void Close() {

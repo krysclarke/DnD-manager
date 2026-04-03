@@ -282,4 +282,61 @@ public class Open5eApiClient : IOpen5eApiClient {
         var effectText = desc[(lastDamageIndex + 7)..].Trim();
         return string.IsNullOrEmpty(effectText) ? null : effectText;
     }
+
+    public async Task<Spell?> GetSpellAsync(string slug) {
+        try {
+            var url = $"{BaseUrl}/spells/{Uri.EscapeDataString(slug)}/?format=json";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            var doc = JsonDocument.Parse(json);
+            return MapToSpell(doc.RootElement);
+        } catch {
+            return null;
+        }
+    }
+
+    public async Task<Spell?> SearchSpellByNameAsync(string name) {
+        try {
+            var url = $"{BaseUrl}/spells/?search={Uri.EscapeDataString(name)}&format=json";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            foreach (var item in root.GetProperty("results").EnumerateArray()) {
+                var itemName = item.GetProperty("name").GetString() ?? string.Empty;
+                if (itemName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return MapToSpell(item);
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }
+
+    private static Spell MapToSpell(JsonElement element) {
+        return new Spell {
+            Slug = GetStringOrEmpty(element, "slug"),
+            Name = GetStringOrEmpty(element, "name"),
+            Level = GetIntOrDefault(element, "level_int", 0),
+            School = GetStringOrEmpty(element, "school"),
+            CastingTime = GetStringOrEmpty(element, "casting_time"),
+            Range = GetStringOrEmpty(element, "range"),
+            Components = GetStringOrEmpty(element, "components"),
+            Material = GetStringOrEmpty(element, "material"),
+            Duration = GetStringOrEmpty(element, "duration"),
+            Concentration = element.TryGetProperty("requires_concentration", out var conc) && conc.ValueKind == JsonValueKind.True,
+            Ritual = element.TryGetProperty("can_be_cast_as_ritual", out var rit) && rit.ValueKind == JsonValueKind.True,
+            Description = GetStringOrEmpty(element, "desc"),
+            HigherLevel = GetStringOrEmpty(element, "higher_level"),
+            Classes = GetStringOrEmpty(element, "dnd_class"),
+            Source = element.TryGetProperty("document__title", out var docTitle)
+                ? docTitle.GetString() ?? "Open5e"
+                : "Open5e"
+        };
+    }
 }

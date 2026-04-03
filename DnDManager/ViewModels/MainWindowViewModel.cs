@@ -31,15 +31,16 @@ public partial class MainWindowViewModel : ObservableObject {
         IEncounterFileService encounterFileService,
         IBestiaryFileService bestiaryFileService,
         IOpen5eApiClient open5eApiClient,
-        IThemeService themeService) {
+        IThemeService themeService,
+        ISpellDatabaseService spellDatabaseService) {
         _campaignRepository = campaignRepository;
         ThemeService = themeService;
 
         DiceRollerVm = new DiceRollerViewModel(diceParser, diceRoller);
         MonsterManagerVm = new MonsterManagerViewModel(
-            bestiaryFileService, open5eApiClient, campaignRepository);
+            bestiaryFileService, open5eApiClient, campaignRepository, spellDatabaseService);
         EncounterTrackerVm = new EncounterTrackerViewModel(
-            DiceRollerVm, encounterService, encounterFileService, MonsterManagerVm);
+            DiceRollerVm, encounterService, encounterFileService, MonsterManagerVm, spellDatabaseService);
         SettingsVm = new SettingsViewModel(themeService, campaignRepository);
     }
 

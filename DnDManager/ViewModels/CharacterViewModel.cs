@@ -56,6 +56,12 @@ public partial class CharacterViewModel : ObservableObject {
     public string LegendaryDescription => Character is NonPlayerCharacter npc ? npc.LegendaryDescription : string.Empty;
     public List<NamedAbility> Reactions => Character is NonPlayerCharacter npc ? npc.Reactions : [];
     public List<NamedAbility> BonusActions => Character is NonPlayerCharacter npc ? npc.BonusActions : [];
+    public List<MonsterSpellInfo> Spells => Character is NonPlayerCharacter npc ? npc.Spells : [];
+    public List<SpellSlotLevel> SpellSlots => Character is NonPlayerCharacter npc ? npc.SpellSlots : [];
+    public int SpellSaveDc => Character is NonPlayerCharacter npc ? npc.SpellSaveDc : 0;
+    public int SpellAttackBonus => Character is NonPlayerCharacter npc ? npc.SpellAttackBonus : 0;
+    public int CasterLevel => Character is NonPlayerCharacter npc ? npc.CasterLevel : 0;
+    public bool HasSpells => Character is NonPlayerCharacter npc && npc.Spells.Count > 0;
 
     public bool HasLegendaryActions => Character is NonPlayerCharacter npc && npc.LegendaryActions.Count > 0;
     public bool HasReactions => Character is NonPlayerCharacter npc && npc.Reactions.Count > 0;
@@ -133,6 +139,13 @@ public partial class CharacterViewModel : ObservableObject {
     [RelayCommand]
     private void ToggleReaction() {
         ReactionUsed = !ReactionUsed;
+    }
+
+    [RelayCommand]
+    private void ResetAllSpellSlots() {
+        foreach (var slot in SpellSlots)
+            slot.ResetSlots();
+        OnPropertyChanged(nameof(SpellSlots));
     }
 
     public void ResetTurnUsage() {

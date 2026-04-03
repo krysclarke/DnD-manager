@@ -12,6 +12,7 @@ namespace DnDManager.ViewModels;
 public partial class MonsterManagerViewModel : ObservableObject {
     private readonly IBestiaryFileService _bestiaryFileService;
     private readonly ICampaignRepository _campaignRepository;
+    private readonly ISpellDatabaseService _spellDatabaseService;
 
     public ObservableCollection<BestiaryEntryViewModel> Entries { get; } = [];
 
@@ -28,11 +29,13 @@ public partial class MonsterManagerViewModel : ObservableObject {
     public MonsterManagerViewModel(
         IBestiaryFileService bestiaryFileService,
         IOpen5eApiClient open5eApiClient,
-        ICampaignRepository campaignRepository) {
+        ICampaignRepository campaignRepository,
+        ISpellDatabaseService spellDatabaseService) {
         _bestiaryFileService = bestiaryFileService;
         _campaignRepository = campaignRepository;
+        _spellDatabaseService = spellDatabaseService;
 
-        ImportVm = new Open5eImportViewModel(open5eApiClient, bestiaryFileService);
+        ImportVm = new Open5eImportViewModel(open5eApiClient, bestiaryFileService, spellDatabaseService);
         ImportVm.OnImportCompleted += async () => await RefreshEntriesAsync();
     }
 
@@ -54,6 +57,12 @@ public partial class MonsterManagerViewModel : ObservableObject {
             Directory.CreateDirectory(dir);
 
         await _bestiaryFileService.InitializeMasterAsync(dbPath);
+
+        // Initialize spell database alongside bestiary
+        var spellDbPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "DnDManager", "spells.db");
+        await _spellDatabaseService.InitializeAsync(spellDbPath);
 
         // Migrate from old multi-file system
         await MigrateFromMultiFileAsync();

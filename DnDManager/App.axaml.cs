@@ -26,11 +26,13 @@ public class App : Application {
             var bestiaryFileService = new BestiaryFileService();
             var open5eApiClient = new Open5eApiClient();
             var themeService = new ThemeService();
+            var spellDatabaseService = new SpellDatabaseService();
 
             var mainVm = new MainWindowViewModel(
                 campaignRepository, diceParser, diceRoller,
                 encounterService, encounterFileService,
-                bestiaryFileService, open5eApiClient, themeService);
+                bestiaryFileService, open5eApiClient, themeService,
+                spellDatabaseService);
 
             // Web interface services
             _networkService = new NetworkService();

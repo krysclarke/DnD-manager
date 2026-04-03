@@ -12,6 +12,7 @@ public partial class EncounterTrackerViewModel : ObservableObject {
     private readonly IEncounterService _encounterService;
     private readonly IEncounterFileService _encounterFileService;
     private readonly MonsterManagerViewModel? _monsterManagerVm;
+    private readonly ISpellDatabaseService? _spellDatabaseService;
 
     public DiceRollerViewModel DiceRollerVm { get; }
     public NpcOverlayViewModel NpcOverlayVm { get; }
@@ -42,10 +43,12 @@ public partial class EncounterTrackerViewModel : ObservableObject {
         DiceRollerViewModel diceRollerVm,
         IEncounterService encounterService,
         IEncounterFileService encounterFileService,
-        MonsterManagerViewModel? monsterManagerVm = null) {
+        MonsterManagerViewModel? monsterManagerVm = null,
+        ISpellDatabaseService? spellDatabaseService = null) {
         _encounterService = encounterService;
         _encounterFileService = encounterFileService;
         _monsterManagerVm = monsterManagerVm;
+        _spellDatabaseService = spellDatabaseService;
         DiceRollerVm = diceRollerVm;
         NpcOverlayVm = new NpcOverlayViewModel(diceRollerVm);
         CampaignNotesVm = new CampaignNotesViewModel();
@@ -79,10 +82,34 @@ public partial class EncounterTrackerViewModel : ObservableObject {
     private AddCharacterDialogViewModel? _pendingAddDialogVm;
 
     [RelayCommand]
-    private void ConfirmAddCharacter() {
+    private async Task ConfirmAddCharacterAsync() {
         if (PendingAddDialogVm is { IsValid: true }) {
             var character = PendingAddDialogVm.CreateCharacter();
             character.SortOrder = Characters.Count;
+
+            // Load spells and slot info for NPCs created from bestiary entries
+            if (character is NonPlayerCharacter npc
+                && _spellDatabaseService != null
+                && PendingAddDialogVm.SelectedBestiaryEntry is { } bestiary
+                && !string.IsNullOrEmpty(bestiary.Open5eSlug)) {
+                try {
+                    npc.Spells = await _spellDatabaseService.GetSpellsForMonsterAsync(bestiary.Open5eSlug);
+                    // Parse spell slots and DC/attack bonus from the bestiary entry's special abilities
+                    var spellInfo = SpellcastingParser.Parse(bestiary.SpecialAbilities);
+                    npc.SpellSlots = spellInfo.SlotLevels;
+                    npc.SpellSaveDc = spellInfo.SpellSaveDc;
+                    npc.SpellAttackBonus = spellInfo.SpellAttackBonus;
+                    npc.CasterLevel = spellInfo.CasterLevel;
+                    // Set caster level and default cast level on each spell
+                    foreach (var spellEntry in npc.Spells) {
+                        spellEntry.CasterLevel = npc.CasterLevel;
+                        spellEntry.InitializeCastLevel();
+                    }
+                } catch {
+                    // Non-fatal: NPC works fine without spells
+                }
+            }
+
             Characters.Add(new CharacterViewModel(character));
         }
         IsAddDialogOpen = false;

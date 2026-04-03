@@ -13,6 +13,11 @@ public class NonPlayerCharacter : Character {
     public string LegendaryDescription { get; set; } = string.Empty;
     public List<NamedAbility> Reactions { get; set; } = [];
     public List<NamedAbility> BonusActions { get; set; } = [];
+    public List<MonsterSpellInfo> Spells { get; set; } = [];
+    public List<SpellSlotLevel> SpellSlots { get; set; } = [];
+    public int SpellSaveDc { get; set; }
+    public int SpellAttackBonus { get; set; }
+    public int CasterLevel { get; set; }
     public int LegendaryActionBudget { get; set; }
     public int LegendaryActionsUsed { get; set; }
     public bool ReactionUsed { get; set; }

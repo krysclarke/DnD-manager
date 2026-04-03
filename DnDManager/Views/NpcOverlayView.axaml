@@ -6,7 +6,7 @@
              x:DataType="vm:NpcOverlayViewModel"
              IsVisible="{Binding IsVisible}">
 
-    <Border Background="{DynamicResource DnDDialogBg}" CornerRadius="8"
+    <Border x:Name="OverlayRoot" Background="{DynamicResource DnDDialogBg}" CornerRadius="8"
             Padding="16" Margin="4,0,0,0"
             VerticalAlignment="Stretch"
             MinWidth="280" MaxWidth="400">
@@ -181,6 +181,150 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- Spells -->
+            <Separator IsVisible="{Binding NpcHasSpells}" Margin="0,8,0,0" />
+            <StackPanel IsVisible="{Binding NpcHasSpells}" Spacing="4">
+                <!-- Spellcasting header with DC + attack bonus -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Spells" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" FontSize="12" Opacity="0.8"
+                               IsVisible="{Binding NpcSpellSaveDc}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="DC {0} | +{1} atk">
+                                <Binding Path="NpcSpellSaveDc" />
+                                <Binding Path="NpcSpellAttackBonus" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <Button Content="Roll Atk" Padding="6,2" MinWidth="0" FontSize="11"
+                            Command="{Binding RollSpellAttackCommand}"
+                            IsVisible="{Binding NpcSpellAttackBonus}" />
+                    <Button Content="Reset Slots" Padding="6,2" MinWidth="0" FontSize="11"
+                            Command="{Binding ResetAllSpellSlotsCommand}"
+                            IsVisible="{Binding NpcSpellSlots.Count}" />
+                </StackPanel>
+
+                <!-- Merged spell groups (level heading + slots + spells) -->
+                <ItemsControl ItemsSource="{Binding NpcSpellGroups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:SpellLevelGroup">
+                            <StackPanel Spacing="2" Margin="0,4,0,0">
+                                <!-- Level heading + slot checkboxes -->
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding LevelDisplay}" FontSize="11"
+                                               FontWeight="SemiBold" MinWidth="55" VerticalAlignment="Center" />
+                                    <ItemsControl ItemsSource="{Binding SlotInfo.SlotItems}"
+                                                  IsVisible="{Binding HasSlots}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="2" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:SpellSlotItem">
+                                                <CheckBox IsChecked="{Binding IsUsed}"
+                                                          MinWidth="0" MinHeight="0"
+                                                          Padding="0" Margin="0"
+                                                          VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                                <!-- Spells at this level -->
+                                <ItemsControl ItemsSource="{Binding Spells}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:MonsterSpellInfo">
+                                            <Border Padding="6" Margin="0,2" CornerRadius="4"
+                                                    Background="{DynamicResource DnDHoverHighlight}">
+                                                <StackPanel Spacing="2">
+                                                    <!-- Row 1: Name + upcast indicator + indicators -->
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{Binding Spell.Name}" FontWeight="SemiBold" />
+                                                        <TextBlock Text="{Binding UpcastLabel}"
+                                                                   FontSize="11" FontWeight="Bold"
+                                                                   Foreground="{DynamicResource DnDAccent}"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding IsUpcastCopy}" />
+                                                        <TextBlock Text="(pre-cast)" FontStyle="Italic"
+                                                                   FontSize="11" Opacity="0.5" VerticalAlignment="Center"
+                                                                   IsVisible="{Binding IsPreCast}" />
+                                                        <TextBlock Text="C" FontSize="11" FontWeight="Bold"
+                                                                   Foreground="{DynamicResource DnDAccent}"
+                                                                   ToolTip.Tip="Concentration"
+                                                                   IsVisible="{Binding Spell.Concentration}" />
+                                                        <TextBlock Text="R" FontSize="11" FontWeight="Bold"
+                                                                   Foreground="{DynamicResource DnDAccent}"
+                                                                   ToolTip.Tip="Ritual"
+                                                                   IsVisible="{Binding Spell.Ritual}" />
+                                                    </StackPanel>
+                                                    <!-- Row 2: Usage, casting time, range -->
+                                                    <StackPanel Orientation="Horizontal" Spacing="8"
+                                                                IsVisible="{Binding !IsUpcastCopy}">
+                                                        <TextBlock Text="{Binding UsageDisplay}"
+                                                                   FontSize="11" FontWeight="SemiBold" Opacity="0.7" />
+                                                        <TextBlock Text="{Binding Spell.CastingTime}"
+                                                                   FontSize="11" Opacity="0.6" />
+                                                        <TextBlock Text="{Binding Spell.Range}"
+                                                                   FontSize="11" Opacity="0.6" />
+                                                    </StackPanel>
+                                                    <!-- Row 3: Combat info + damage roll + upcast -->
+                                                    <StackPanel Orientation="Horizontal" Spacing="6"
+                                                                IsVisible="{Binding Spell.HasDamage}">
+                                                        <TextBlock Text="{Binding Spell.CombatSummary}"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource DnDAccent}"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding !IsUpcastCopy}" />
+                                                        <!-- Upcast level selector (only for base entries) -->
+                                                        <ComboBox ItemsSource="{Binding AvailableCastLevels}"
+                                                                  SelectedItem="{Binding SelectedCastLevel}"
+                                                                  IsVisible="{Binding CanUpcast}"
+                                                                  MinWidth="44" MaxHeight="24" Padding="4,1"
+                                                                  FontSize="11" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding CastLevelDisplay}"
+                                                                   FontSize="11" FontStyle="Italic" Opacity="0.6"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding CastLevelDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                        <!-- Roll damage button -->
+                                                        <Button Content="{Binding EffectiveDamageDice, StringFormat='Roll {0}'}"
+                                                                Padding="6,2" MinWidth="0" FontSize="11"
+                                                                VerticalAlignment="Center"
+                                                                Command="{Binding #OverlayRoot.((vm:NpcOverlayViewModel)DataContext).RollSpellDamageCommand}"
+                                                                CommandParameter="{Binding}" />
+                                                    </StackPanel>
+                                                    <!-- Combat summary for non-damage spells (save type only) -->
+                                                    <TextBlock Text="{Binding Spell.CombatSummary}"
+                                                               FontSize="11" FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource DnDAccent}">
+                                                        <TextBlock.IsVisible>
+                                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                <Binding Path="!Spell.HasDamage" />
+                                                                <Binding Path="Spell.CombatSummary" Converter="{x:Static StringConverters.IsNotNullOrEmpty}" />
+                                                            </MultiBinding>
+                                                        </TextBlock.IsVisible>
+                                                    </TextBlock>
+                                                    <!-- Higher level text (hide for upcast copies) -->
+                                                    <TextBlock Text="{Binding Spell.HigherLevel}"
+                                                               TextWrapping="Wrap" FontSize="10" FontStyle="Italic"
+                                                               Opacity="0.6"
+                                                               ToolTip.Tip="{Binding Spell.HigherLevel}"
+                                                               IsVisible="{Binding Spell.HigherLevel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                    <!-- Short description with full tooltip (hide for upcast copies) -->
+                                                    <TextBlock Text="{Binding Spell.ShortDescription}"
+                                                               TextWrapping="Wrap" FontSize="11" Opacity="0.7"
+                                                               ToolTip.Tip="{Binding Spell.Description}"
+                                                               IsVisible="{Binding !IsUpcastCopy}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
 
             <!-- Reactions -->
             <Separator IsVisible="{Binding NpcReactions.Count}" Margin="0,8,0,0" />
