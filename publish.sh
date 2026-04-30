@@ -9,18 +9,14 @@ RIDS=("linux-x64" "win-x64" "osx-x64" "osx-arm64")
 echo "=== DnD Manager Multi-Platform Publish ==="
 echo ""
 
-# Clean previous output
-if [ -d "$OUTPUT_DIR" ]; then
-    echo "Cleaning previous publish output..."
-    rm -rf "$OUTPUT_DIR"
-fi
-
 FAILED=()
 SUCCEEDED=()
 
 for rid in "${RIDS[@]}"; do
     echo ""
     echo "--- Publishing for $rid ---"
+    mkdir -p "$OUTPUT_DIR/$rid"
+    find "$OUTPUT_DIR/$rid" -mindepth 1 -delete
     if dotnet publish "$PROJECT" -c Release -r "$rid" -o "$OUTPUT_DIR/$rid" --self-contained true; then
         SUCCEEDED+=("$rid")
     else
