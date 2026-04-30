@@ -44,7 +44,7 @@
                          AcceptsTab="True"
                          TextWrapping="Wrap"
                          MinHeight="100"
-                         Watermark="Enter campaign notes (Markdown supported)..." />
+                         PlaceholderText="Enter campaign notes (Markdown supported)..." />
             </Panel>
         </DockPanel>
     </Border>

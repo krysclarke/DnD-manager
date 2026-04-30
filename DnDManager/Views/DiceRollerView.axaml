@@ -10,7 +10,7 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
             <TextBox x:Name="DiceInputBox"
                      Text="{Binding DiceInput}"
-                     Watermark="2d6+3, 1d20>, hd20+2"
+                     PlaceholderText="2d6+3, 1d20>, hd20+2"
                      MinWidth="175"
                      VerticalAlignment="Center" />
             <Button Content="Roll"

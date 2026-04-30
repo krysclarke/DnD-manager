@@ -52,7 +52,7 @@
                                 Padding="4,0" MinWidth="24" MinHeight="24"
                                 VerticalAlignment="Center" />
                         <TextBox Text="{Binding SelectedNpc.HpDeltaText, UpdateSourceTrigger=PropertyChanged}"
-                                 Watermark="#"
+                                 PlaceholderText="#"
                                  MinWidth="40" MaxWidth="60" Margin="2,0"
                                  VerticalAlignment="Center"
                                  VerticalContentAlignment="Center" />

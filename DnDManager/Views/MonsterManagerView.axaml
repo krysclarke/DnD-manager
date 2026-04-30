@@ -35,7 +35,7 @@
             <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="8,8,8,0">
                     <TextBox Grid.Column="0"
-                             Watermark="Search monsters..."
+                             PlaceholderText="Search monsters..."
                              Text="{Binding SearchText}" />
                     <Button Grid.Column="1" Content="+" Margin="4,0,0,0"
                             ToolTip.Tip="Add Monster"
@@ -345,13 +345,13 @@
                             <StackPanel Grid.Row="3" Grid.Column="1" Spacing="2" Margin="8,0,0,0">
                                 <TextBlock Text="Armor Description" />
                                 <TextBox Text="{Binding ArmorDescription}"
-                                         Watermark="e.g. leather armor, shield" />
+                                         PlaceholderText="e.g. leather armor, shield" />
                             </StackPanel>
 
                             <!-- HP (dice notation + computed average) -->
                             <StackPanel Grid.Row="4" Grid.Column="0" Spacing="2">
                                 <TextBlock Text="Hit Points (dice)" />
-                                <TextBox Text="{Binding HitDice}" Watermark="e.g. 10d10+10" />
+                                <TextBox Text="{Binding HitDice}" PlaceholderText="e.g. 10d10+10" />
                             </StackPanel>
                             <StackPanel Grid.Row="4" Grid.Column="1" Spacing="2" Margin="8,0,0,0">
                                 <TextBlock Text="Average HP" />
@@ -363,17 +363,17 @@
                             <!-- CR / Initiative -->
                             <StackPanel Grid.Row="5" Grid.Column="0" Spacing="2">
                                 <TextBlock Text="Challenge Rating" />
-                                <TextBox Text="{Binding ChallengeRating}" Watermark="e.g. 1/4" />
+                                <TextBox Text="{Binding ChallengeRating}" PlaceholderText="e.g. 1/4" />
                             </StackPanel>
                             <StackPanel Grid.Row="5" Grid.Column="1" Spacing="2" Margin="8,0,0,0">
                                 <TextBlock Text="Initiative Modifier (blank = DEX mod)" />
-                                <TextBox Text="{Binding InitiativeModifierText}" Watermark="e.g. 2" />
+                                <TextBox Text="{Binding InitiativeModifierText}" PlaceholderText="e.g. 2" />
                             </StackPanel>
 
                             <!-- Speed -->
                             <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Spacing="2">
                                 <TextBlock Text="Speed" />
-                                <TextBox Text="{Binding Speed}" Watermark="e.g. walk 30 ft." />
+                                <TextBox Text="{Binding Speed}" PlaceholderText="e.g. walk 30 ft." />
                             </StackPanel>
 
                             <!-- Ability Scores -->
@@ -428,7 +428,7 @@
                         <!-- Multiattack -->
                         <TextBlock Text="Multiattack" FontWeight="SemiBold" Margin="0,8,0,0" />
                         <TextBox Text="{Binding MultiattackDescription}"
-                                 Watermark="e.g. The dragon makes three attacks: one bite and two claws."
+                                 PlaceholderText="e.g. The dragon makes three attacks: one bite and two claws."
                                  TextWrapping="Wrap" AcceptsReturn="True"
                                  MinHeight="40" />
 
@@ -443,7 +443,7 @@
                                             <!-- Row 1: Name + Type + Remove -->
                                             <Grid ColumnDefinitions="*,Auto,Auto">
                                                 <TextBox Grid.Column="0" Text="{Binding Name}"
-                                                         Watermark="Attack name" />
+                                                         PlaceholderText="Attack name" />
                                                 <ComboBox Grid.Column="1" Margin="8,0,0,0"
                                                           ItemsSource="{x:Static models:Attack.AvailableAttackTypes}"
                                                           SelectedItem="{Binding AttackType}" />
@@ -455,7 +455,7 @@
                                             <!-- Row 2: Attack dice + Reach/Range -->
                                             <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                                                 <TextBox Grid.Column="0" Text="{Binding AttackDice}"
-                                                         Watermark="Attack roll (e.g. d20+4)" />
+                                                         PlaceholderText="Attack roll (e.g. d20+4)" />
                                                 <!-- Melee: reach -->
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="8,0,0,0">
                                                     <TextBlock Text="Reach:" VerticalAlignment="Center" />
@@ -484,7 +484,7 @@
                                                     <DataTemplate x:DataType="models:DamageEntry">
                                                         <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,2">
                                                             <TextBox Grid.Column="0" Text="{Binding DamageDice}"
-                                                                     Watermark="Dice (e.g. 1d6+2)" />
+                                                                     PlaceholderText="Dice (e.g. 1d6+2)" />
                                                             <ComboBox Grid.Column="1" Margin="8,0,0,0"
                                                                       ItemsSource="{x:Static models:DamageEntry.AvailableDamageTypes}"
                                                                       SelectedItem="{Binding DamageType}" />
@@ -502,7 +502,7 @@
                                                     CommandParameter="{Binding}" />
                                             <!-- Row 4: Effect text -->
                                             <TextBox Text="{Binding EffectText}"
-                                                     Watermark="Effect text (e.g. target has Grappled condition, escape DC 13)"
+                                                     PlaceholderText="Effect text (e.g. target has Grappled condition, escape DC 13)"
                                                      TextWrapping="Wrap" AcceptsReturn="True"
                                                      MinHeight="40" />
                                         </StackPanel>
@@ -522,12 +522,12 @@
                                             BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="Ability name" />
+                                                <TextBox Grid.Column="0" Text="{Binding Name}" PlaceholderText="Ability name" />
                                                 <Button Grid.Column="1" Content="x" Padding="6,2" MinWidth="0" Margin="8,0,0,0"
                                                         Command="{Binding $parent[UserControl].((vm:MonsterManagerViewModel)DataContext).RemoveSpecialAbilityCommand}"
                                                         CommandParameter="{Binding}" />
                                             </Grid>
-                                            <TextBox Text="{Binding Description}" Watermark="Description"
+                                            <TextBox Text="{Binding Description}" PlaceholderText="Description"
                                                      TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
                                         </StackPanel>
                                     </Border>
@@ -546,12 +546,12 @@
                                             BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="Action name" />
+                                                <TextBox Grid.Column="0" Text="{Binding Name}" PlaceholderText="Action name" />
                                                 <Button Grid.Column="1" Content="x" Padding="6,2" MinWidth="0" Margin="8,0,0,0"
                                                         Command="{Binding $parent[UserControl].((vm:MonsterManagerViewModel)DataContext).RemoveNonAttackActionCommand}"
                                                         CommandParameter="{Binding}" />
                                             </Grid>
-                                            <TextBox Text="{Binding Description}" Watermark="Description"
+                                            <TextBox Text="{Binding Description}" PlaceholderText="Description"
                                                      TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
                                         </StackPanel>
                                     </Border>
@@ -570,12 +570,12 @@
                                             BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="Bonus action name" />
+                                                <TextBox Grid.Column="0" Text="{Binding Name}" PlaceholderText="Bonus action name" />
                                                 <Button Grid.Column="1" Content="x" Padding="6,2" MinWidth="0" Margin="8,0,0,0"
                                                         Command="{Binding $parent[UserControl].((vm:MonsterManagerViewModel)DataContext).RemoveBonusActionCommand}"
                                                         CommandParameter="{Binding}" />
                                             </Grid>
-                                            <TextBox Text="{Binding Description}" Watermark="Description"
+                                            <TextBox Text="{Binding Description}" PlaceholderText="Description"
                                                      TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
                                         </StackPanel>
                                     </Border>
@@ -594,12 +594,12 @@
                                             BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="Reaction name" />
+                                                <TextBox Grid.Column="0" Text="{Binding Name}" PlaceholderText="Reaction name" />
                                                 <Button Grid.Column="1" Content="x" Padding="6,2" MinWidth="0" Margin="8,0,0,0"
                                                         Command="{Binding $parent[UserControl].((vm:MonsterManagerViewModel)DataContext).RemoveReactionCommand}"
                                                         CommandParameter="{Binding}" />
                                             </Grid>
-                                            <TextBox Text="{Binding Description}" Watermark="Description"
+                                            <TextBox Text="{Binding Description}" PlaceholderText="Description"
                                                      TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
                                         </StackPanel>
                                     </Border>
@@ -612,7 +612,7 @@
                         <!-- Legendary Actions editor -->
                         <TextBlock Text="Legendary Actions" FontWeight="SemiBold" Margin="0,8,0,0" />
                         <TextBox Text="{Binding LegendaryDescription}"
-                                 Watermark="e.g. The dragon can take 3 legendary actions..."
+                                 PlaceholderText="e.g. The dragon can take 3 legendary actions..."
                                  TextWrapping="Wrap" AcceptsReturn="True" MinHeight="40" />
                         <ItemsControl ItemsSource="{Binding LegendaryActions}">
                             <ItemsControl.ItemTemplate>
@@ -621,12 +621,12 @@
                                             BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1">
                                         <StackPanel Spacing="4">
                                             <Grid ColumnDefinitions="*,Auto">
-                                                <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="Legendary action name" />
+                                                <TextBox Grid.Column="0" Text="{Binding Name}" PlaceholderText="Legendary action name" />
                                                 <Button Grid.Column="1" Content="x" Padding="6,2" MinWidth="0" Margin="8,0,0,0"
                                                         Command="{Binding $parent[UserControl].((vm:MonsterManagerViewModel)DataContext).RemoveLegendaryActionCommand}"
                                                         CommandParameter="{Binding}" />
                                             </Grid>
-                                            <TextBox Text="{Binding Description}" Watermark="Description"
+                                            <TextBox Text="{Binding Description}" PlaceholderText="Description"
                                                      TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
                                         </StackPanel>
                                     </Border>
@@ -678,7 +678,7 @@
                     <!-- Search bar -->
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                         <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
-                                 Watermark="Search monsters (e.g. dragon, goblin)..." />
+                                 PlaceholderText="Search monsters (e.g. dragon, goblin)..." />
                         <Button Grid.Column="1" Content="Search"
                                 Command="{Binding SearchCommand}"
                                 Margin="8,0,0,0" />

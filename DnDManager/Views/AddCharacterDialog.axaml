@@ -44,14 +44,14 @@
         <StackPanel Spacing="4">
             <TextBlock Text="Character Name" />
             <TextBox Text="{Binding CharacterName}"
-                     Watermark="Enter character name" />
+                     PlaceholderText="Enter character name" />
         </StackPanel>
 
         <!-- Player Name (PC only) -->
         <StackPanel Spacing="4" IsVisible="{Binding IsPc}">
             <TextBlock Text="Player Name" />
             <TextBox Text="{Binding PlayerName}"
-                     Watermark="Enter player name" />
+                     PlaceholderText="Enter player name" />
         </StackPanel>
 
         <!-- PP (PC only) -->

@@ -121,14 +121,14 @@
                             <!-- Conditions -->
                             <TextBox Grid.Column="6"
                                      Text="{Binding Conditions}"
-                                     Watermark="Conditions"
+                                     PlaceholderText="Conditions"
                                      MinWidth="100" Margin="4,0"
                                      VerticalAlignment="Center" />
 
                             <!-- Notes -->
                             <TextBox Grid.Column="7"
                                      Text="{Binding Notes}"
-                                     Watermark="Notes"
+                                     PlaceholderText="Notes"
                                      MinWidth="80" Margin="4,0"
                                      VerticalAlignment="Center" />
 
