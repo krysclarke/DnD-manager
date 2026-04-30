@@ -26,9 +26,6 @@ public partial class SettingsViewModel : ObservableObject {
     private AppTheme _selectedWebTheme;
 
     [ObservableProperty]
-    private bool _isWebInterfaceEnabled;
-
-    [ObservableProperty]
     private string? _contrastWarning;
 
     [ObservableProperty]
@@ -43,7 +40,6 @@ public partial class SettingsViewModel : ObservableObject {
 
     public event Action? WebThemeChanged;
     public event Action? WebUiScaleChanged;
-    public event Action<bool>? WebInterfaceEnabledChanged;
 
     public SettingsViewModel(IThemeService themeService, ICampaignRepository campaignRepository) {
         _themeService = themeService;
@@ -108,13 +104,6 @@ public partial class SettingsViewModel : ObservableObject {
         WebUiScaleChanged?.Invoke();
     }
 
-    partial void OnIsWebInterfaceEnabledChanged(bool value) {
-        if (!_isLoading) {
-            _ = _campaignRepository.SaveSettingAsync("webInterfaceEnabled", value.ToString());
-            WebInterfaceEnabledChanged?.Invoke(value);
-        }
-    }
-
     partial void OnSelectedWebThemeChanged(AppTheme value) {
         if (!_isLoading) {
             _ = _campaignRepository.SaveSettingAsync("webTheme", value.Id);
@@ -143,12 +132,11 @@ public partial class SettingsViewModel : ObservableObject {
     }
 
     public void LoadSettings(string? themeId, double uiScale, double webUiScale,
-        string? webThemeId = null, bool webInterfaceEnabled = false) {
+        string? webThemeId = null) {
         _isLoading = true;
         try {
             UiScale = Math.Clamp(uiScale, 0.5, 2.0);
             WebUiScale = Math.Clamp(webUiScale, 0.5, 2.0);
-            IsWebInterfaceEnabled = webInterfaceEnabled;
 
             var theme = _themeService.AvailableThemes.FirstOrDefault(t => t.Id == themeId)
                         ?? _themeService.AvailableThemes[0];
@@ -164,9 +152,6 @@ public partial class SettingsViewModel : ObservableObject {
         }
 
         CheckContrast();
-
-        if (IsWebInterfaceEnabled)
-            WebInterfaceEnabledChanged?.Invoke(true);
     }
 
     private void CheckContrast() {

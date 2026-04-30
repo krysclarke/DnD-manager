@@ -1,7 +1,9 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using DnDManager.Models;
 using DnDManager.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +15,6 @@ using Microsoft.Extensions.Logging;
 namespace DnDManager.Services;
 
 public class WebServerService : IWebServerService {
-    private readonly INetworkService _networkService;
     private WebApplication? _app;
     private Func<WebEncounterState>? _stateProvider;
 
@@ -25,24 +26,19 @@ public class WebServerService : IWebServerService {
     public event Action<string>? UrlChanged;
     public event Action<bool>? RunningChanged;
 
-    public WebServerService(INetworkService networkService) {
-        _networkService = networkService;
-    }
-
     public void SetStateProvider(Func<WebEncounterState> stateProvider) {
         _stateProvider = stateProvider;
     }
 
-    public async Task StartAsync(int preferredPort = 0) {
+    public async Task StartAsync(IPAddress selectedAddress, int preferredPort = 0) {
         if (IsRunning) return;
 
-        var lanIp = _networkService.GetLanIpAddress();
-        var cert = GenerateSelfSignedCert(lanIp);
+        var cert = GenerateSelfSignedCert(selectedAddress);
         Port = SelectPort(preferredPort);
 
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.ConfigureKestrel(options => {
-            options.Listen(IPAddress.Any, Port, listenOptions => {
+            options.ListenAnyIP(Port, listenOptions => {
                 listenOptions.UseHttps(cert);
             });
         });
@@ -64,7 +60,7 @@ public class WebServerService : IWebServerService {
 
         HubContext = _app.Services.GetRequiredService<IHubContext<EncounterHub>>();
 
-        var host = lanIp?.ToString() ?? "localhost";
+        var host = FormatAddressForUrl(selectedAddress);
         Url = $"https://{host}:{Port}";
         IsRunning = true;
 
@@ -87,6 +83,17 @@ public class WebServerService : IWebServerService {
     public async ValueTask DisposeAsync() {
         await StopAsync();
         GC.SuppressFinalize(this);
+    }
+
+    private static string FormatAddressForUrl(IPAddress address) {
+        if (address.AddressFamily == AddressFamily.InterNetworkV6) {
+            var addrStr = address.ToString();
+            // Percent-encode the scope ID separator for URLs
+            addrStr = addrStr.Replace("%", "%25");
+            return $"[{addrStr}]";
+        }
+
+        return address.ToString();
     }
 
     private static void MapStaticContent(WebApplication app) {
@@ -122,7 +129,7 @@ public class WebServerService : IWebServerService {
         }
 
         // Fall back to OS-assigned random port
-        using var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
         var randomPort = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
@@ -131,16 +138,16 @@ public class WebServerService : IWebServerService {
 
     private static bool IsPortAvailable(int port) {
         try {
-            using var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, port);
+            using var listener = new TcpListener(IPAddress.Loopback, port);
             listener.Start();
             listener.Stop();
             return true;
-        } catch (System.Net.Sockets.SocketException) {
+        } catch (SocketException) {
             return false;
         }
     }
 
-    private static X509Certificate2 GenerateSelfSignedCert(IPAddress? lanIp) {
+    private static X509Certificate2 GenerateSelfSignedCert(IPAddress selectedAddress) {
         using var rsa = RSA.Create(2048);
         var request = new CertificateRequest(
             "CN=DnDManager-Local", rsa,
@@ -152,8 +159,16 @@ public class WebServerService : IWebServerService {
         var sanBuilder = new SubjectAlternativeNameBuilder();
         sanBuilder.AddIpAddress(IPAddress.Loopback);
         sanBuilder.AddDnsName("localhost");
-        if (lanIp != null)
-            sanBuilder.AddIpAddress(lanIp);
+
+        // For link-local IPv6 with scope ID, strip the scope for the SAN
+        if (selectedAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
+            selectedAddress.ScopeId != 0) {
+            var noScope = new IPAddress(selectedAddress.GetAddressBytes());
+            sanBuilder.AddIpAddress(noScope);
+        } else {
+            sanBuilder.AddIpAddress(selectedAddress);
+        }
+
         request.CertificateExtensions.Add(sanBuilder.Build());
 
         var cert = request.CreateSelfSigned(

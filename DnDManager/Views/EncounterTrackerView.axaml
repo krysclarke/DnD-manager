@@ -155,9 +155,9 @@
             </Border>
         </Border>
 
-        <!-- Web Interface Enable Prompt Overlay -->
+        <!-- Web Server Start Prompt Overlay -->
         <Border Grid.RowSpan="2"
-                IsVisible="{Binding WebServerVm.IsEnablePromptVisible}"
+                IsVisible="{Binding WebServerVm.IsStartPromptVisible}"
                 Background="{DynamicResource DnDOverlayBg}">
             <Border Background="{DynamicResource DnDDialogBg}"
                     CornerRadius="8" Padding="24"
@@ -165,16 +165,16 @@
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     BoxShadow="0 4 16 0 #40000000">
                 <StackPanel Spacing="12" HorizontalAlignment="Center">
-                    <TextBlock Text="Web interface is disabled."
+                    <TextBlock Text="Web server is not running."
                                FontSize="16" FontWeight="SemiBold"
                                HorizontalAlignment="Center" />
                     <StackPanel Orientation="Horizontal" Spacing="8"
                                 HorizontalAlignment="Center">
-                        <Button Content="Enable"
-                                Command="{Binding WebServerVm.EnableWebInterfaceCommand}"
+                        <Button Content="Start"
+                                Command="{Binding WebServerVm.StartServerFromPromptCommand}"
                                 MinWidth="80" HorizontalContentAlignment="Center" />
                         <Button Content="Close"
-                                Command="{Binding WebServerVm.HideEnablePromptCommand}"
+                                Command="{Binding WebServerVm.HideStartPromptCommand}"
                                 MinWidth="80" HorizontalContentAlignment="Center" />
                     </StackPanel>
                 </StackPanel>

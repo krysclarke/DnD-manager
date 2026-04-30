@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using DnDManager.Models;
 
 namespace DnDManager.Services;
 
@@ -8,8 +9,11 @@ public class NetworkService : INetworkService {
     private bool _lastConnectivity;
 
     public event Action<bool>? ConnectivityChanged;
+    public event Action? AddressesChanged;
 
-    public IPAddress? GetLanIpAddress() {
+    public IReadOnlyList<NetworkAddressInfo> GetAllLanAddresses() {
+        var results = new List<NetworkAddressInfo>();
+
         try {
             foreach (var iface in NetworkInterface.GetAllNetworkInterfaces()) {
                 if (iface.OperationalStatus != OperationalStatus.Up)
@@ -20,20 +24,36 @@ public class NetworkService : INetworkService {
 
                 var props = iface.GetIPProperties();
                 foreach (var addr in props.UnicastAddresses) {
-                    if (addr.Address.AddressFamily != AddressFamily.InterNetwork)
-                        continue;
-                    if (IsPrivateIp(addr.Address))
-                        return addr.Address;
+                    if (addr.Address.AddressFamily == AddressFamily.InterNetwork) {
+                        if (IsPrivateIp(addr.Address)) {
+                            results.Add(new NetworkAddressInfo {
+                                Address = addr.Address,
+                                InterfaceName = iface.Name
+                            });
+                        }
+                    } else if (addr.Address.AddressFamily == AddressFamily.InterNetworkV6) {
+                        if (IsValidV6(addr.Address)) {
+                            results.Add(new NetworkAddressInfo {
+                                Address = addr.Address,
+                                InterfaceName = iface.Name
+                            });
+                        }
+                    }
                 }
             }
         } catch {
             // Network enumeration can fail on some platforms
         }
 
-        return null;
+        return results;
     }
 
-    public bool HasLanConnectivity() => GetLanIpAddress() != null;
+    public IPAddress? GetLanIpAddress() =>
+        GetAllLanAddresses()
+            .FirstOrDefault(a => a.Family == AddressFamily.InterNetwork)?
+            .Address;
+
+    public bool HasLanConnectivity() => GetAllLanAddresses().Count > 0;
 
     public void StartMonitoring() {
         _lastConnectivity = HasLanConnectivity();
@@ -55,6 +75,8 @@ public class NetworkService : INetworkService {
     }
 
     private void CheckAndNotify() {
+        AddressesChanged?.Invoke();
+
         var current = HasLanConnectivity();
         if (current != _lastConnectivity) {
             _lastConnectivity = current;
@@ -70,5 +92,28 @@ public class NetworkService : INetworkService {
             192 => bytes[1] == 168,
             _ => false
         };
+    }
+
+    private static bool IsValidV6(IPAddress address) {
+        if (address.Equals(IPAddress.IPv6Loopback))
+            return false;
+        if (address.IsIPv6Multicast)
+            return false;
+
+        var bytes = address.GetAddressBytes();
+
+        // Link-local (fe80::/10)
+        if (address.IsIPv6LinkLocal)
+            return true;
+
+        // Global unicast (2000::/3)
+        if ((bytes[0] & 0xE0) == 0x20)
+            return true;
+
+        // Unique local (fc00::/7)
+        if ((bytes[0] & 0xFE) == 0xFC)
+            return true;
+
+        return false;
     }
 }

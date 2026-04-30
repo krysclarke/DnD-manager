@@ -56,13 +56,17 @@ public partial class MainWindowViewModel : ObservableObject {
         var webUiScaleStr = await _campaignRepository.LoadSettingAsync("webUiScale");
 
         var webThemeId = await _campaignRepository.LoadSettingAsync("webTheme");
-        var webEnabledStr = await _campaignRepository.LoadSettingAsync("webInterfaceEnabled");
 
         var uiScale = double.TryParse(uiScaleStr, out var s) ? s : 1.0;
         var webUiScale = double.TryParse(webUiScaleStr, out var ws) ? ws : 1.0;
-        var webEnabled = bool.TryParse(webEnabledStr, out var we) && we;
 
-        SettingsVm.LoadSettings(themeId, uiScale, webUiScale, webThemeId, webEnabled);
+        SettingsVm.LoadSettings(themeId, uiScale, webUiScale, webThemeId);
+
+        // Initialize web server address list with persisted selection
+        if (WebServerVm != null) {
+            var savedAddress = await _campaignRepository.LoadSettingAsync("webSelectedAddress");
+            WebServerVm.Initialize(savedAddress);
+        }
 
         // Load window geometry
         var wxStr = await _campaignRepository.LoadSettingAsync("windowX");
