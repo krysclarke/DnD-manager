@@ -6,9 +6,9 @@ A cross-platform desktop application for managing Dungeons & Dragons campaigns, 
 
 - **Encounter Tracker** — Manage PCs and NPCs, roll initiative, track turns and rounds, view NPC details in an overlay, and adjust HP on the fly
 - **Dice Roller** — Full D&D notation parsing with advantage/disadvantage, Halfling Luck, multi-roll support, and timestamped history
-- **Bestiary** — Master monster database with Open5e import, `.bestiary` file support, multiattack, legendary actions, and reactions
-- **Web Interface** — Read-only encounter view served over HTTPS with real-time SignalR updates and QR code access
-- **Themes** — Five WCAG-compliant themes with UI scaling from 0.5x to 2.0x
+- **Bestiary** — Master monster database with Open5e import, `.bestiary` file support, multiattack, legendary actions, reactions, and spellcasting
+- **Web Interface** — Read-only encounter view served over HTTPS with real-time SignalR updates and QR code access, with IPv6 support and selectable bind address
+- **Themes** — Five built-in WCAG-compliant themes plus a custom theme editor (color picker, font selection, live contrast validation), with UI scaling from 0.5x to 2.0x
 - **Campaign Persistence** — Automatic SQLite save/load of all encounter state, dice history, notes, and settings
 
 ## Tech Stack
@@ -17,7 +17,7 @@ A cross-platform desktop application for managing Dungeons & Dragons campaigns, 
 |-----------|------------|
 | Language | C# |
 | Runtime | .NET 10.0 |
-| UI Framework | Avalonia 11.3.12 |
+| UI Framework | Avalonia 12.0.2 |
 | Architecture | MVVM (CommunityToolkit.Mvvm) |
 | Database | SQLite (Microsoft.Data.Sqlite) |
 | Web Server | Embedded Kestrel + SignalR |
@@ -108,12 +108,13 @@ Binaries are output to `publish/<rid>/`.
 
 - Single master database stored at `{AppData}/DnDManager/bestiary.db`
 - Import from `.bestiary` files with duplicate handling
-- Import from Open5e API (special abilities, non-attack actions, legendary actions, reactions, bonus actions)
+- Import from Open5e API (special abilities, non-attack actions, legendary actions, reactions, bonus actions, spells)
 - Attack model: melee/ranged types, reach/range, multiple damage entries with damage types, effect text, computed average damage
 - Multiattack stored as description text
 - HP stored as dice notation (e.g. `10d10+10`) with dynamic average calculation
 - Optional initiative modifier (falls back to DEX modifier)
 - Bestiary dropdown in encounter tracker for quick NPC creation
+- Spell database auto-populated from Open5e during monster import; NPC overlay shows known spells grouped by level
 
 </details>
 
@@ -122,7 +123,8 @@ Binaries are output to `publish/<rid>/`.
 
 - Read-only encounter view accessible from any device on the local network
 - Embedded Kestrel HTTPS server with in-memory self-signed certificate
-- Random unprivileged port assignment
+- Enable/disable toggle in Settings; chosen port is remembered between sessions
+- IPv4 and IPv6 support with explicit bind-address selection (loopback, any, or a specific interface)
 - Real-time updates via SignalR push
 - QR code for quick access (available in Settings and Encounter toolbar)
 - NPCs displayed as generic "Monster N" names for DM secrecy
@@ -146,6 +148,7 @@ All themes meet WCAG AA or higher contrast requirements.
 | Purple | Dark | Violet/purple accent ramp |
 | Arcane | Dark | Deep blues with turquoise accents |
 
+- Custom theme editor — pick any color via color picker, choose UI font, with live WCAG contrast validation against the rest of the palette
 - UI scaling: 0.5x to 2.0x in 0.25x increments
 - All color values use `DynamicResource` for live theme switching
 
