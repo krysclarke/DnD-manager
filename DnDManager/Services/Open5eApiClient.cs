@@ -7,10 +7,36 @@ namespace DnDManager.Services;
 public class Open5eApiClient : IOpen5eApiClient {
     private const string BaseUrl = "https://api.open5e.com/v1";
     private readonly HttpClient _httpClient;
+    private IReadOnlyList<Open5eDocument>? _documentsCache;
 
     public Open5eApiClient() {
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+    }
+
+    public async Task<IReadOnlyList<Open5eDocument>> GetDocumentsAsync() {
+        if (_documentsCache != null) return _documentsCache;
+
+        var url = $"{BaseUrl}/documents/?format=json&limit=100";
+        var response = await _httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        var list = new List<Open5eDocument>();
+        if (root.TryGetProperty("results", out var results) && results.ValueKind == JsonValueKind.Array) {
+            foreach (var item in results.EnumerateArray()) {
+                list.Add(new Open5eDocument {
+                    Slug = GetStringOrEmpty(item, "slug"),
+                    Title = GetStringOrEmpty(item, "title")
+                });
+            }
+        }
+
+        _documentsCache = list;
+        return _documentsCache;
     }
 
     public async Task<Open5eSearchResult> SearchMonstersAsync(string query, int page = 1, int pageSize = 20) {
@@ -37,11 +63,29 @@ public class Open5eApiClient : IOpen5eApiClient {
                 Size = item.GetProperty("size").GetString() ?? string.Empty,
                 Source = item.TryGetProperty("document__title", out var docTitle)
                     ? docTitle.GetString() ?? "Open5e"
-                    : "Open5e"
+                    : "Open5e",
+                DocumentSlug = item.TryGetProperty("document__slug", out var docSlug)
+                    ? docSlug.GetString() ?? string.Empty
+                    : string.Empty
             });
         }
 
         return result;
+    }
+
+    public async Task<Open5eSearchResult> SearchAllMonstersAsync(string query) {
+        var combined = new Open5eSearchResult { HasNextPage = false, HasPreviousPage = false };
+        const int pageSize = 100;
+        var page = 1;
+        while (true) {
+            var pageResult = await SearchMonstersAsync(query, page, pageSize);
+            combined.TotalCount = pageResult.TotalCount;
+            combined.Results.AddRange(pageResult.Results);
+            if (!pageResult.HasNextPage) break;
+            page++;
+            if (page > 50) break; // hard safety cap (5000 results)
+        }
+        return combined;
     }
 
     public async Task<BestiaryEntry> GetMonsterAsync(string slug) {

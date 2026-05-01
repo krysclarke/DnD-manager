@@ -7,5 +7,6 @@ public class Open5eMonsterPreview {
     public string Type { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
     public string Source { get; set; } = string.Empty;
+    public string DocumentSlug { get; set; } = string.Empty;
     public bool IsSelected { get; set; }
 }

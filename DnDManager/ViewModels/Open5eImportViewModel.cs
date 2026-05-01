@@ -12,17 +12,20 @@ public partial class Open5eImportViewModel : ObservableObject {
     private readonly ISpellDatabaseService _spellDatabaseService;
 
     public ObservableCollection<Open5eMonsterPreview> SearchResults { get; } = [];
+    public ObservableCollection<Open5eSourceFilter> SourceFilters { get; } = [];
 
     [ObservableProperty] private string _searchQuery = string.Empty;
-    [ObservableProperty] private bool _isSearching;
-    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SearchButtonText))]
+    private bool _isSearching;
+
+    public string SearchButtonText => IsSearching ? "Searching..." : "Search";
     [ObservableProperty] private int _totalCount;
-    [ObservableProperty] private bool _hasNextPage;
-    [ObservableProperty] private bool _hasPreviousPage;
     [ObservableProperty] private string? _errorMessage;
     [ObservableProperty] private string _statusMessage = string.Empty;
 
-    private const int PageSize = 20;
+    private readonly List<Open5eMonsterPreview> _rawResults = [];
+    private bool _sourceFiltersLoaded;
 
     public Open5eImportViewModel(
         IOpen5eApiClient apiClient,
@@ -36,22 +39,51 @@ public partial class Open5eImportViewModel : ObservableObject {
     [RelayCommand]
     private async Task SearchAsync() {
         if (string.IsNullOrWhiteSpace(SearchQuery)) return;
-        CurrentPage = 1;
+        await EnsureSourceFiltersAsync();
         await ExecuteSearchAsync();
     }
 
-    [RelayCommand]
-    private async Task NextPageAsync() {
-        if (!HasNextPage) return;
-        CurrentPage++;
-        await ExecuteSearchAsync();
+    public async Task EnsureSourceFiltersAsync() {
+        if (_sourceFiltersLoaded) return;
+        try {
+            var docs = await _apiClient.GetDocumentsAsync();
+            foreach (var d in docs) {
+                var filter = new Open5eSourceFilter {
+                    Slug = d.Slug,
+                    Title = d.Title,
+                    IsEnabled = true
+                };
+                filter.PropertyChanged += OnSourceFilterChanged;
+                SourceFilters.Add(filter);
+            }
+            _sourceFiltersLoaded = true;
+        } catch (Exception ex) {
+            ErrorMessage = $"Failed to load sources: {ex.Message}";
+        }
     }
 
+    private void OnSourceFilterChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
+        if (e.PropertyName == nameof(Open5eSourceFilter.IsEnabled) && !_suppressFilterReapply)
+            ApplyFilters();
+    }
+
+    private bool _suppressFilterReapply;
+
     [RelayCommand]
-    private async Task PreviousPageAsync() {
-        if (!HasPreviousPage) return;
-        CurrentPage--;
-        await ExecuteSearchAsync();
+    private void EnableAllSources() => SetAllSources(true);
+
+    [RelayCommand]
+    private void DisableAllSources() => SetAllSources(false);
+
+    private void SetAllSources(bool enabled) {
+        _suppressFilterReapply = true;
+        try {
+            foreach (var f in SourceFilters)
+                f.IsEnabled = enabled;
+        } finally {
+            _suppressFilterReapply = false;
+        }
+        ApplyFilters();
     }
 
     private async Task ExecuteSearchAsync() {
@@ -59,20 +91,51 @@ public partial class Open5eImportViewModel : ObservableObject {
         ErrorMessage = null;
 
         try {
-            var result = await _apiClient.SearchMonstersAsync(SearchQuery, CurrentPage, PageSize);
-            SearchResults.Clear();
-            foreach (var preview in result.Results)
-                SearchResults.Add(preview);
+            var result = await _apiClient.SearchAllMonstersAsync(SearchQuery);
+            _rawResults.Clear();
+            _rawResults.AddRange(result.Results);
 
             TotalCount = result.TotalCount;
-            HasNextPage = result.HasNextPage;
-            HasPreviousPage = result.HasPreviousPage;
-            StatusMessage = $"Found {TotalCount} results";
+            ApplyFilters();
         } catch (Exception ex) {
             ErrorMessage = $"Search failed: {ex.Message}";
         } finally {
             IsSearching = false;
         }
+    }
+
+    private void ApplyFilters() {
+        var tokens = (SearchQuery ?? string.Empty)
+            .Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+        var enabledSlugs = SourceFilters
+            .Where(f => f.IsEnabled)
+            .Select(f => f.Slug)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var knownSlugs = SourceFilters
+            .Select(f => f.Slug)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var filtered = _rawResults.Where(r => {
+            // Source check: unknown slugs pass through so new sources don't disappear silently.
+            if (knownSlugs.Contains(r.DocumentSlug) && !enabledSlugs.Contains(r.DocumentSlug))
+                return false;
+            // AND token match against the name.
+            foreach (var token in tokens) {
+                if (r.Name.IndexOf(token, StringComparison.OrdinalIgnoreCase) < 0)
+                    return false;
+            }
+            return true;
+        }).ToList();
+
+        SearchResults.Clear();
+        foreach (var item in filtered)
+            SearchResults.Add(item);
+
+        StatusMessage = filtered.Count == _rawResults.Count
+            ? $"Showing all {filtered.Count} results"
+            : $"Showing {filtered.Count} of {_rawResults.Count} results";
     }
 
     [RelayCommand]

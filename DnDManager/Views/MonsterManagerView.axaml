@@ -662,7 +662,7 @@
         </Border>
 
         <!-- Import overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="2"
+        <Border Grid.Row="0" Grid.RowSpan="2" Name="ImportOverlay"
                 IsVisible="{Binding IsImportPanelOpen}"
                 Background="{DynamicResource DnDOverlayBg}">
             <Border Background="{DynamicResource DnDDialogBg}"
@@ -670,22 +670,48 @@
                     MaxWidth="700" MaxHeight="600"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     BoxShadow="0 4 16 0 #40000000">
-                <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto"
                       DataContext="{Binding ImportVm}">
                     <TextBlock Grid.Row="0" Text="Import from Open5e"
                                FontSize="18" FontWeight="Bold" Margin="0,0,0,8" />
 
                     <!-- Search bar -->
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                        <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
+                        <TextBox Grid.Column="0" Name="ImportSearchBox"
+                                 Text="{Binding SearchQuery}"
+                                 KeyDown="ImportSearchBox_KeyDown"
                                  PlaceholderText="Search monsters (e.g. dragon, goblin)..." />
-                        <Button Grid.Column="1" Content="Search"
+                        <Button Grid.Column="1" Content="{Binding SearchButtonText}"
                                 Command="{Binding SearchCommand}"
                                 Margin="8,0,0,0" />
                     </Grid>
 
+                    <!-- Source filters -->
+                    <Expander Grid.Row="2" Header="Filter sources" Margin="0,0,0,8">
+                        <StackPanel Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <Button Content="All" Command="{Binding EnableAllSourcesCommand}" />
+                                <Button Content="None" Command="{Binding DisableAllSourcesCommand}" />
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding SourceFilters}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:Open5eSourceFilter">
+                                    <CheckBox IsChecked="{Binding IsEnabled}"
+                                              Content="{Binding Title}"
+                                              Margin="0,2,12,2" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Expander>
+
                     <!-- Results list -->
-                    <Border Grid.Row="2" BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1" CornerRadius="4">
+                    <Border Grid.Row="3" BorderBrush="{DynamicResource DnDBorderBrush}" BorderThickness="1" CornerRadius="4">
                         <ScrollViewer>
                             <ItemsControl ItemsSource="{Binding SearchResults}">
                                 <ItemsControl.ItemTemplate>
@@ -712,25 +738,19 @@
                         </ScrollViewer>
                     </Border>
 
-                    <!-- Pagination + status -->
-                    <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+                    <!-- Status + selection actions -->
+                    <Grid Grid.Row="4" ColumnDefinitions="Auto,*" Margin="0,8,0,0">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
                             <Button Content="Select All" Command="{Binding SelectAllCommand}" />
                             <Button Content="Deselect All" Command="{Binding DeselectAllCommand}" />
                         </StackPanel>
                         <TextBlock Grid.Column="1" Text="{Binding StatusMessage}"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"
                                    Opacity="0.7" />
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
-                            <Button Content="Prev" Command="{Binding PreviousPageCommand}"
-                                    IsEnabled="{Binding HasPreviousPage}" />
-                            <Button Content="Next" Command="{Binding NextPageCommand}"
-                                    IsEnabled="{Binding HasNextPage}" />
-                        </StackPanel>
                     </Grid>
 
                     <!-- Error + action buttons -->
-                    <StackPanel Grid.Row="4" Margin="0,8,0,0" Spacing="4">
+                    <StackPanel Grid.Row="5" Margin="0,8,0,0" Spacing="4">
                         <TextBlock Text="{Binding ErrorMessage}"
                                    Foreground="{DynamicResource DnDErrorForeground}"
                                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
