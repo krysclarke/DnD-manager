@@ -12,11 +12,15 @@ public class EncounterService : IEncounterService {
     public void RollNpcInitiatives(IList<Character> characters) {
         foreach (var character in characters) {
             if (character is NonPlayerCharacter npc) {
-                var result = _diceRoller.RollInitiative();
-                var modifier = npc.InitiativeModifier ?? 0;
-                npc.Initiative = result.PartResults.Sum(p => p.Total) + modifier;
+                npc.Initiative = RollSingleNpcInitiative(npc);
             }
         }
+    }
+
+    public int RollSingleNpcInitiative(NonPlayerCharacter npc) {
+        var result = _diceRoller.RollInitiative();
+        var modifier = npc.InitiativeModifier ?? 0;
+        return result.PartResults.Sum(p => p.Total) + modifier;
     }
 
     public void SortByInitiative(IList<Character> characters) {

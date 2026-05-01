@@ -55,10 +55,15 @@
                                  PlaceholderText="#"
                                  MinWidth="40" MaxWidth="60" Margin="2,0"
                                  VerticalAlignment="Center"
-                                 VerticalContentAlignment="Center" />
+                                 VerticalContentAlignment="Center"
+                                 KeyDown="OnHpDeltaKeyDown" />
                         <Button Content="+" Command="{Binding SelectedNpc.IncrementHpCommand}"
                                 Padding="4,0" MinWidth="24" MinHeight="24"
                                 VerticalAlignment="Center" />
+                        <Button Content="X" Command="{Binding SelectedNpc.CancelHpEditCommand}"
+                                Padding="4,0" MinWidth="24" MinHeight="24"
+                                VerticalAlignment="Center"
+                                ToolTip.Tip="Cancel (Esc)" />
                     </StackPanel>
                 </Panel>
             </StackPanel>

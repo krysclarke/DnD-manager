@@ -138,12 +138,21 @@ public class EncounterBroadcastService : IDisposable {
 
         switch (e.Action) {
             case NotifyCollectionChangedAction.Add when e.NewItems != null:
+                var midListInsert = false;
                 foreach (CharacterViewModel vm in e.NewItems) {
                     SubscribeToCharacter(vm);
                     var index = _encounterVm.Characters.IndexOf(vm);
+                    if (index >= 0 && index < _encounterVm.Characters.Count - 1) {
+                        midListInsert = true;
+                        continue;
+                    }
                     var dto = await Dispatcher.UIThread.InvokeAsync(() =>
                         BuildCharacterDto(vm, false));
                     await _hubContext.Clients.All.SendAsync("CharacterAdded", dto, index);
+                }
+                if (midListInsert) {
+                    var addState = await Dispatcher.UIThread.InvokeAsync(BuildFullState);
+                    await _hubContext.Clients.All.SendAsync("ReceiveFullState", addState);
                 }
                 break;
 

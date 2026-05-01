@@ -120,6 +120,12 @@ public partial class CharacterViewModel : ObservableObject {
         IsHpEditMode = true;
     }
 
+    [RelayCommand]
+    private void CancelHpEdit() {
+        HpDeltaText = string.Empty;
+        IsHpEditMode = false;
+    }
+
     private bool CanUseLegendaryAction() => LegendaryActionsUsed < LegendaryActionBudget;
 
     [RelayCommand(CanExecute = nameof(CanUseLegendaryAction))]

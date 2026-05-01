@@ -15,4 +15,11 @@ public partial class NpcOverlayView : UserControl {
             e.Handled = true;
         }
     }
+
+    private void OnHpDeltaKeyDown(object? sender, KeyEventArgs e) {
+        if (e.Key == Key.Escape && DataContext is NpcOverlayViewModel { SelectedNpc: { } npc }) {
+            npc.CancelHpEditCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
 }

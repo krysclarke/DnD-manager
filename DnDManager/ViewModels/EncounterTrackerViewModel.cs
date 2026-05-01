@@ -110,7 +110,18 @@ public partial class EncounterTrackerViewModel : ObservableObject {
                 }
             }
 
-            Characters.Add(new CharacterViewModel(character));
+            var newVm = new CharacterViewModel(character);
+
+            if (IsEncounterActive) {
+                PendingInitiativeCharacter = newVm;
+                PendingInitiativeValue = 10;
+                IsAddDialogOpen = false;
+                PendingAddDialogVm = null;
+                IsAddInitiativePromptOpen = true;
+                return;
+            }
+
+            Characters.Add(newVm);
         }
         IsAddDialogOpen = false;
         PendingAddDialogVm = null;
@@ -120,6 +131,70 @@ public partial class EncounterTrackerViewModel : ObservableObject {
     private void CancelAddCharacter() {
         IsAddDialogOpen = false;
         PendingAddDialogVm = null;
+    }
+
+    [ObservableProperty]
+    private bool _isAddInitiativePromptOpen;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PendingIsNpc))]
+    private CharacterViewModel? _pendingInitiativeCharacter;
+
+    [ObservableProperty]
+    private int _pendingInitiativeValue = 10;
+
+    public bool PendingIsNpc => PendingInitiativeCharacter?.IsNpc == true;
+
+    [RelayCommand]
+    private void RollPendingInitiative() {
+        if (PendingInitiativeCharacter?.Character is NonPlayerCharacter npc) {
+            PendingInitiativeValue = _encounterService.RollSingleNpcInitiative(npc);
+        }
+    }
+
+    [RelayCommand]
+    private void ConfirmPendingInitiative() {
+        if (PendingInitiativeCharacter is not { } pendingVm) {
+            IsAddInitiativePromptOpen = false;
+            return;
+        }
+
+        pendingVm.Initiative = PendingInitiativeValue;
+        pendingVm.SyncToModel();
+
+        var targetIndex = ComputeSortedInsertIndex(pendingVm);
+        Characters.Insert(targetIndex, pendingVm);
+
+        if (IsEncounterActive && targetIndex <= ActiveCharacterIndex) {
+            ActiveCharacterIndex++;
+        }
+
+        for (var i = 0; i < Characters.Count; i++) {
+            Characters[i].Character.SortOrder = i;
+        }
+
+        PendingInitiativeCharacter = null;
+        IsAddInitiativePromptOpen = false;
+    }
+
+    [RelayCommand]
+    private void CancelPendingInitiative() {
+        PendingInitiativeCharacter = null;
+        IsAddInitiativePromptOpen = false;
+    }
+
+    private int ComputeSortedInsertIndex(CharacterViewModel newVm) {
+        var newInit = newVm.Initiative ?? int.MinValue;
+        var newIsNpc = newVm.IsNpc;
+
+        for (var i = 0; i < Characters.Count; i++) {
+            var existing = Characters[i];
+            var existingInit = existing.Initiative ?? int.MinValue;
+
+            if (existingInit < newInit) return i;
+            if (existingInit == newInit && !newIsNpc && existing.IsNpc) return i;
+        }
+        return Characters.Count;
     }
 
     [RelayCommand]

@@ -105,6 +105,19 @@
             </Border>
         </Border>
 
+        <!-- Add Character Initiative Prompt Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding IsAddInitiativePromptOpen}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="420" MaxHeight="240"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <views:AddInitiativePromptDialog DataContext="{Binding}" />
+            </Border>
+        </Border>
+
         <!-- Save Confirmation Dialog Overlay -->
         <Border Grid.RowSpan="2"
                 IsVisible="{Binding IsSaveConfirmationOpen}"
