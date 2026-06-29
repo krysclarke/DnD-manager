@@ -20,7 +20,7 @@
                             CommandParameter="{Binding}"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            Background="{Binding IsActive, Converter={StaticResource ActiveBrushConverter}}"
+                            Background="{Binding IsSelected, Converter={StaticResource ActiveBrushConverter}}"
                             Padding="4,2" Margin="0,1"
                             CornerRadius="4">
                         <Button.Styles>

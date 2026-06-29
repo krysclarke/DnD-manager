@@ -75,6 +75,7 @@ public partial class NpcOverlayViewModel : ObservableObject {
     public void ShowNpc(CharacterViewModel? npcVm) {
         if (SelectedNpc is not null) {
             SelectedNpc.PropertyChanged -= OnNpcPropertyChanged;
+            SelectedNpc.IsSelected = false;
         }
 
         SelectedNpc = npcVm;
@@ -82,6 +83,7 @@ public partial class NpcOverlayViewModel : ObservableObject {
 
         if (npcVm is not null) {
             npcVm.PropertyChanged += OnNpcPropertyChanged;
+            npcVm.IsSelected = true;
         }
 
         OnPropertyChanged(nameof(NpcName));
@@ -274,6 +276,7 @@ public partial class NpcOverlayViewModel : ObservableObject {
     private void Close() {
         if (SelectedNpc is not null) {
             SelectedNpc.PropertyChanged -= OnNpcPropertyChanged;
+            SelectedNpc.IsSelected = false;
         }
         IsVisible = false;
         SelectedNpc = null;

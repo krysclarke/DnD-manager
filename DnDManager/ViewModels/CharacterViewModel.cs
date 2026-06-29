@@ -25,6 +25,10 @@ public partial class CharacterViewModel : ObservableObject {
     [ObservableProperty]
     private bool _isActive;
 
+    // True when this character is the one displayed in the NPC overlay pane (drives the row highlight).
+    [ObservableProperty]
+    private bool _isSelected;
+
     // PC-specific
     public bool IsPc => Character.CharacterType == CharacterType.PC;
     public bool IsNpc => Character.CharacterType == CharacterType.NPC;
