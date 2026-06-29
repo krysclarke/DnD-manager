@@ -4,8 +4,8 @@ A cross-platform desktop application for managing Dungeons & Dragons campaigns, 
 
 ## Features
 
-- **Encounter Tracker** — Manage PCs and NPCs, roll initiative, track turns and rounds, view NPC details in an overlay, and adjust HP on the fly
-- **Dice Roller** — Full D&D notation parsing with advantage/disadvantage, Halfling Luck, multi-roll support, and timestamped history
+- **Encounter Tracker** — Manage PCs and NPCs, roll initiative, track turns and rounds, apply 5e conditions, view NPC stat blocks in an auto-hiding overlay, roll saving throws and skill checks, and adjust HP on the fly
+- **Dice Roller** — Full D&D notation parsing with advantage/disadvantage, Halfling Luck, multi-roll support, labeled/contextual rolls, and timestamped history
 - **Bestiary** — Master monster database with Open5e import, `.bestiary` file support, multiattack, legendary actions, reactions, and spellcasting
 - **Web Interface** — Read-only encounter view served over HTTPS with real-time SignalR updates and QR code access, with IPv6 support and selectable bind address
 - **Themes** — Five built-in WCAG-compliant themes plus a custom theme editor (color picker, font selection, live contrast validation), with UI scaling from 0.5x to 2.0x
@@ -17,7 +17,7 @@ A cross-platform desktop application for managing Dungeons & Dragons campaigns, 
 |-----------|------------|
 | Language | C# |
 | Runtime | .NET 10.0 |
-| UI Framework | Avalonia 12.0.2 |
+| UI Framework | Avalonia 12.0.5 |
 | Architecture | MVVM (CommunityToolkit.Mvvm) |
 | Database | SQLite (Microsoft.Data.Sqlite) |
 | Web Server | Embedded Kestrel + SignalR |
@@ -77,13 +77,16 @@ Binaries are output to `publish/<rid>/`.
 <summary><strong>Encounter Tracker</strong></summary>
 
 - Add PCs and NPCs with Passive Perception, Passive Insight, AC, and HP
-- Roll or manually set initiative, with automatic sort
-- Step through turns with active character highlighting and round counting
-- NPC overlay panel showing full stat block, attacks with damage rolls, and effect text
+- Roll or manually set initiative, with automatic sort; prompt for initiative when adding a character mid-encounter
+- Step through turns with a ▶ indicator marking the active character, plus round counting
+- Auto-hiding NPC overlay panel showing full stat block, attacks with damage rolls, and effect text — opens on NPC selection or when an NPC's turn is active, hides on PC selection
+- Row highlight marks the NPC currently shown in the overlay pane (distinct from the ▶ active-turn indicator)
+- Roll saving throws and skill checks from the overlay, with ability/skill dropdowns, auto-filled modifiers (manual override), and normal/advantage/disadvantage
+- Apply 5e conditions via a double-click editor (15 standard conditions plus Exhaustion levels 1–6); imposed conditions auto-apply and lock (e.g. Unconscious imposes Incapacitated + Prone)
 - Legendary action budget tracking with per-turn reset (D&D RAW)
 - Reaction tracking with per-creature-turn reset
 - `[L]` and `[R]` badges in the character grid for legendary actions and reactions
-- HP adjustment via delta input with +/- buttons
+- HP adjustment via delta input with +/- buttons, with cancellable inline editing
 - Campaign notes with Markdown editing and live preview
 - Save/load character collections as `.dnd` files (standalone SQLite databases)
 - Auto-save on close, auto-load on startup
@@ -98,6 +101,7 @@ Binaries are output to `publish/<rid>/`.
 - Advantage (`>`) and disadvantage (`<`) markers — d20 only
 - Halfling Luck: `hd20` (reroll natural 1s once)
 - Comma-separated multi-rolls: `1d20, 2d6+3, 1d8`
+- Labeled, contextual rolls — overlay attack/damage/spell rolls record their source (e.g. `Greatsword - Damage` with per-damage-type labels)
 - Timestamped roll history with natural 1/20 highlighting
 - Smart total display: d20/d100 show individual results, smaller dice show totals first
 
@@ -129,7 +133,8 @@ Binaries are output to `publish/<rid>/`.
 - QR code for quick access (available in Settings and Encounter toolbar)
 - NPCs displayed as generic "Monster N" names for DM secrecy
 - PCs show name and initiative only
-- Color-coded health bars: green (>75%), yellow (75–30%), red (<30%)
+- NPC health shown as a color-coded textual status pill (unwounded / wounded / bloodied / last legs)
+- Active conditions broadcast for both PCs and NPCs
 - Separate theme selector for the web interface
 
 </details>
