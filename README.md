@@ -8,7 +8,7 @@ A cross-platform desktop application for managing Dungeons & Dragons campaigns, 
 - **Dice Roller** — Full D&D notation parsing with advantage/disadvantage, Halfling Luck, multi-roll support, labeled/contextual rolls, and timestamped history
 - **Bestiary** — Master monster database with Open5e import, `.bestiary` file support, multiattack, legendary actions, reactions, and spellcasting
 - **Web Interface** — Read-only encounter view served over HTTPS with real-time SignalR updates and QR code access, with IPv6 support and selectable bind address
-- **Themes** — Five built-in WCAG-compliant themes plus a custom theme editor (color picker, font selection, live contrast validation), with UI scaling from 0.5x to 2.0x
+- **Themes** — Eleven built-in WCAG-compliant themes plus a custom theme editor (color picker, font selection, live contrast validation), with UI scaling from 0.5x to 2.0x
 - **Campaign Persistence** — Automatic SQLite save/load of all encounter state, dice history, notes, and settings
 
 ## Tech Stack
@@ -150,8 +150,13 @@ All themes meet WCAG AA or higher contrast requirements.
 | Parchment | Light | D&D-themed browns and tans |
 | High-Contrast Light | Light | WCAG AAA, strong blue accents |
 | High-Contrast Dark | Dark | WCAG AAA, default for dark systems |
-| Purple | Dark | Violet/purple accent ramp |
 | Arcane | Dark | Deep blues with turquoise accents |
+| Purple | Dark | Violet/purple accent ramp |
+| Forest | Dark | Deep druidic greens |
+| Infernal | Dark | Crimson and ember dragon-fire |
+| Dungeon | Dark | Muted slate-steel, atmospheric stone |
+| Royal | Dark | Gold and amber treasure tones |
+| Frost | Light | Icy teal — cold counterpart to Parchment |
 
 - Custom theme editor — pick any color via color picker, choose UI font, with live WCAG contrast validation against the rest of the palette
 - UI scaling: 0.5x to 2.0x in 0.25x increments

@@ -17,3 +17,7 @@
 - In the history log, for invalid input:
   - Show the dice string (without any whitespace)
   - Display "INVALID", with the reason (e.g. "invalid dice size", "multiple modifiers")
+
+## Labeled / context rolls
+- A roll may carry a context label (e.g. NPC name plus the attack, saving throw, or skill check it represents), shown alongside the entry in the history log.
+- Used by the NPC overlay for one-click attack, damage, saving-throw, and skill-check rolls (see `EncounterTracker.md`).

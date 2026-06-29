@@ -1,15 +1,17 @@
 # Web interface
-- Read-only view, no interaction ability (not even to change theme or UI scale - these are controlled through the main program's interface)
-- Use HTTPS, random unprivileged port number.
-  - Self-signed certificate is fine.
-- Main program interface has button to display a QR code of the URL (max 20% width/height of screen)
-  - Display an error message if no network connectivity detected, and automatically generate & display the QR code once connectivity is detected
-    - Only network access, not Internet access, needs to be possible
-- Theme controlled from main program (see `Themes` section of `InterfaceCustomisation.md` for more detail)
+- Read-only view, no interaction ability (not even to change theme or UI scale - these are controlled through the main program's interface).
+- Use HTTPS on an unprivileged port (a preferred list is tried, falling back to an OS-assigned port).
+  - Self-signed certificate is fine (generated in-memory).
+- Updates are pushed to connected clients in real time via SignalR (with automatic reconnect) rather than polling.
+- A QR code of the URL can be displayed from the main program (max 20% width/height of screen). A "QR" button is provided in both the Settings tab and the Encounter tracker toolbar.
+  - Display an error message if no network connectivity detected, and automatically generate & display the QR code once connectivity is detected.
+    - Only network access, not Internet access, needs to be possible.
+- The web interface defaults to the main program's theme but has its own theme and scale selectors in the Settings tab (see `InterfaceCustomisation.md`).
 - When an encounter is active
-  - Show characters in initiative order
+  - Show the round number and characters in initiative order.
+  - For PC's: show name and initiative only.
   - For NPC's:
-    - Show a generic name, such as "Monster"
+    - Show a generic name ("Monster").
     - Show a colour coded health bar (default theme: Green for >75% of max HP, then yellow for 75% down to 30%, then red for less than 30%).
-    - Show any active conditions
-- Prefer the use of a reliable and reputable framework.
+    - Show any active conditions.
+- Built on Kestrel / ASP.NET Core with SignalR; QR codes via QRCoder.

@@ -14,6 +14,10 @@ see `../docs/EncounterTracker.md` for details about the encounter tracker.  This
 
 see `../docs/Bestiary.md` for details about the bestiary.  This applies to all requirements and code relating to creating and managing NPC's.
 
+see `../docs/Spells.md` for details about the spell database.  This applies to all requirements and code relating to storing, importing, and displaying spells.
+
+see `../docs/Persistence.md` for details about campaign persistence.  This applies to all requirements and code relating to saving and loading campaign state and settings.
+
 see `../docs/InterfaceCustomisation.md` for details about themes and UI scaling.  This applies to all requirements and code relating to creating, selecting, and customising themes, as well as adjusting the size of the interface.
 
 see `../docs/WebInterface.md` for details about the web interface.  This applies to all requirements and code related to the web interface.
