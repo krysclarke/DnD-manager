@@ -47,6 +47,27 @@ public partial class DiceRollerViewModel : ObservableObject {
         Roll();
     }
 
+    public void RollLabeled(string? context, IReadOnlyList<(string dice, string? label)> components) {
+        var expression = new DiceExpression { Context = context };
+        var rawSegments = new List<string>();
+        foreach (var (dice, label) in components) {
+            if (string.IsNullOrWhiteSpace(dice)) continue;
+            var (parsed, _) = _parser.Parse(dice);
+            if (parsed is null) continue;
+            foreach (var p in parsed.Parts) {
+                p.Label = label;
+                expression.Parts.Add(p);
+                rawSegments.Add(p.RawText);
+            }
+        }
+        if (expression.Parts.Count == 0) return;
+        expression.RawInput = string.Join(",", rawSegments);
+        var result = _roller.Roll(expression);
+        result.RawInput = expression.RawInput;
+        result.Context = context;
+        History.Insert(0, new DiceHistoryEntryViewModel(result));
+    }
+
     public List<DiceRollResult> GetHistoryResults() {
         return History.Select(h => h.Result).ToList();
     }

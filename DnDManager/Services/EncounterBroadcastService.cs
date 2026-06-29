@@ -66,17 +66,24 @@ public class EncounterBroadcastService : IDisposable {
         };
 
         if (vm.IsNpc) {
-            var hpPercent = vm.MaxHitPoints > 0
-                ? (double)vm.CurrentHitPoints / vm.MaxHitPoints
-                : 0;
-            dto.HpPercent = hpPercent;
-            dto.HpCategory = hpPercent switch {
-                > 0.75 => "green",
-                >= 0.30 => "yellow",
-                _ => "red"
-            };
-            dto.Conditions = string.IsNullOrWhiteSpace(vm.Conditions) ? null : vm.Conditions;
+            var current = vm.CurrentHitPoints;
+            var max = vm.MaxHitPoints;
+            if (current >= max) {
+                dto.HpStatus = "unwounded";
+                dto.HpColor = "green";
+            } else if (current < 10) {
+                dto.HpStatus = "last legs";
+                dto.HpColor = "red";
+            } else if (current <= max / 2.0) {
+                dto.HpStatus = "bloodied";
+                dto.HpColor = "red";
+            } else {
+                dto.HpStatus = "wounded";
+                dto.HpColor = "yellow";
+            }
         }
+
+        dto.Conditions = string.IsNullOrWhiteSpace(vm.Conditions) ? null : vm.Conditions;
 
         return dto;
     }
@@ -109,7 +116,7 @@ public class EncounterBroadcastService : IDisposable {
         };
     }
 
-    private static string ColorToHex(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+    private static string ColorToHex(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}{c.A:X2}";
 
     private async void OnEncounterPropertyChanged(object? sender, PropertyChangedEventArgs e) {
         if (_hubContext == null) return;

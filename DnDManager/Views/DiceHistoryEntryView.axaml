@@ -33,6 +33,11 @@
                        Foreground="{DynamicResource DnDLabelForeground}"
                        FontSize="11" />
 
+            <!-- Roll context / nature -->
+            <TextBlock Text="{Binding Context}"
+                       FontWeight="Bold" FontSize="12"
+                       IsVisible="{Binding HasContext}" />
+
             <!-- Invalid result -->
             <StackPanel Orientation="Horizontal"
                         Spacing="6"

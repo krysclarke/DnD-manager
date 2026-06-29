@@ -9,6 +9,8 @@ public partial class DiceHistoryEntryViewModel : ObservableObject {
     public string DiceString { get; }
     public bool IsValid { get; }
     public string? ErrorReason { get; }
+    public string? Context { get; }
+    public bool HasContext => !string.IsNullOrEmpty(Context);
     public List<DicePartDisplayInfo> Parts { get; } = [];
 
     public DiceHistoryEntryViewModel(DiceRollResult result) {
@@ -17,6 +19,7 @@ public partial class DiceHistoryEntryViewModel : ObservableObject {
         DiceString = result.RawInput.Replace(" ", "").Replace("\t", "");
         IsValid = result.IsValid;
         ErrorReason = result.ErrorReason;
+        Context = result.Context;
 
         if (result.IsValid) {
             foreach (var partResult in result.PartResults) {
@@ -43,7 +46,9 @@ public class DicePartDisplayInfo {
 
     public DicePartDisplayInfo(DicePartResult partResult) {
         PartResult = partResult;
-        Label = partResult.Part.RawText;
+        Label = partResult.Part.Label is { } l
+            ? $"{l} {partResult.Part.RawText}"
+            : partResult.Part.RawText;
         Sides = partResult.Sides;
         IsD20 = partResult.Sides == 20;
         IsD100 = partResult.Sides == 100;

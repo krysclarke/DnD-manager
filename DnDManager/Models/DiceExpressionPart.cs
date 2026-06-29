@@ -8,4 +8,5 @@ public class DiceExpressionPart {
     public bool HasDisadvantage { get; set; }
     public bool HalflingLuck { get; set; }
     public string RawText { get; set; } = string.Empty;
+    public string? Label { get; set; }
 }

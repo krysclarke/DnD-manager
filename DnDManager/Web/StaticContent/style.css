@@ -83,7 +83,7 @@ header h1 {
 }
 
 .character-card.active {
-    background-color: var(--active-highlight);
+    background: linear-gradient(var(--active-highlight), var(--active-highlight)), var(--dialog-bg);
     border-left-color: var(--accent);
 }
 
@@ -138,38 +138,31 @@ header h1 {
     font-size: 0.8em;
 }
 
-/* Health Bar */
-.health-bar-container {
-    width: 100%;
-    max-width: 300px;
+/* Health Status */
+.hp-status {
+    height: 2.5rem;
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    background-color: #000000;
+    border-radius: 1.25rem;
+    font-weight: 700;
+    font-size: 1.1em;
+    white-space: nowrap;
+    text-transform: capitalize;
 }
 
-.health-bar-track {
-    height: 12px;
-    background-color: var(--overlay-bg);
-    border-radius: 6px;
-    overflow: hidden;
+.hp-status.green {
+    color: var(--hp-green);
 }
 
-.health-bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    transition: width 0.3s ease, background-color 0.3s ease;
+.hp-status.yellow {
+    color: var(--hp-yellow);
 }
 
-.health-bar-fill.green {
-    background-color: var(--hp-green);
-}
-
-.health-bar-fill.yellow {
-    background-color: var(--hp-yellow);
-}
-
-.health-bar-fill.red {
-    background-color: var(--hp-red);
+.hp-status.red {
+    color: var(--hp-red);
 }
 
 /* Conditions */
@@ -248,9 +241,5 @@ header h1 {
     .character-card {
         padding: 0.5rem 0.75rem;
         gap: 0.5rem;
-    }
-
-    .health-bar-container {
-        max-width: 180px;
     }
 }

@@ -134,6 +134,32 @@ public partial class EncounterTrackerViewModel : ObservableObject {
     }
 
     [ObservableProperty]
+    private bool _isConditionsDialogOpen;
+
+    [ObservableProperty]
+    private ConditionsEditDialogViewModel? _pendingConditionsDialogVm;
+
+    [RelayCommand]
+    private void OpenConditionsEditor(CharacterViewModel? charVm) {
+        if (charVm is null) return;
+        PendingConditionsDialogVm = new ConditionsEditDialogViewModel(charVm);
+        IsConditionsDialogOpen = true;
+    }
+
+    [RelayCommand]
+    private void ConfirmConditionsEdit() {
+        PendingConditionsDialogVm?.Apply();
+        IsConditionsDialogOpen = false;
+        PendingConditionsDialogVm = null;
+    }
+
+    [RelayCommand]
+    private void CancelConditionsEdit() {
+        IsConditionsDialogOpen = false;
+        PendingConditionsDialogVm = null;
+    }
+
+    [ObservableProperty]
     private bool _isAddInitiativePromptOpen;
 
     [ObservableProperty]

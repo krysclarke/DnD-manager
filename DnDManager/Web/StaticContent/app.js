@@ -81,8 +81,8 @@ function renderCharacters(characters, isEncounterActive, activeIndex) {
         html += '<div class="character-info">';
         html += '<span class="character-name">' + escapeHtml(char.displayName) + '</span>';
 
-        // Conditions (NPC only)
-        if (!char.isPc && char.conditions) {
+        // Conditions (PCs and NPCs)
+        if (char.conditions) {
             html += '<div class="conditions">';
             char.conditions.split(",").forEach(function(cond) {
                 cond = cond.trim();
@@ -95,15 +95,10 @@ function renderCharacters(characters, isEncounterActive, activeIndex) {
 
         html += '</div>';
 
-        // Health bar (NPC only)
-        if (!char.isPc && char.hpPercent != null) {
-            var pct = Math.max(0, Math.min(100, Math.round(char.hpPercent * 100)));
-            var cat = char.hpCategory || "green";
-            html += '<div class="health-bar-container">';
-            html += '<div class="health-bar-track">';
-            html += '<div class="health-bar-fill ' + cat + '" style="width:' + pct + '%"></div>';
-            html += '</div>';
-            html += '</div>';
+        // Health status (NPC only)
+        if (!char.isPc && char.hpStatus) {
+            html += '<div class="hp-status ' + (char.hpColor || "green") + '">'
+                + escapeHtml(char.hpStatus) + '</div>';
         }
 
         card.innerHTML = html;

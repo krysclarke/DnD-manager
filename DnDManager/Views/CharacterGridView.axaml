@@ -119,11 +119,24 @@
                             </StackPanel>
 
                             <!-- Conditions -->
-                            <TextBox Grid.Column="6"
-                                     Text="{Binding Conditions}"
-                                     PlaceholderText="Conditions"
-                                     MinWidth="100" Margin="4,0"
-                                     VerticalAlignment="Center" />
+                            <Border Grid.Column="6"
+                                    MinWidth="100" Margin="4,0" Padding="6,3"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource DnDInlineCodeBg}"
+                                    CornerRadius="4" Cursor="Hand"
+                                    ToolTip.Tip="Double-click to edit conditions"
+                                    DoubleTapped="OnConditionsDoubleTapped">
+                                <Panel>
+                                    <TextBlock Text="{Binding Conditions}"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding Conditions, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                    <TextBlock Text="Conditions"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource DnDMutedText}"
+                                               IsVisible="{Binding Conditions, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+                                </Panel>
+                            </Border>
 
                             <!-- Notes -->
                             <TextBox Grid.Column="7"

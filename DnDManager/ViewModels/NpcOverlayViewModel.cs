@@ -90,12 +90,15 @@ public partial class NpcOverlayViewModel : ObservableObject {
 
     [RelayCommand]
     private void RollAttack(Attack attack) {
-        _diceRollerVm.SetInputAndRoll(attack.AttackDice);
+        _diceRollerVm.RollLabeled($"{attack.Name} — Attack", [(attack.AttackDice, null)]);
     }
 
     [RelayCommand]
     private void RollDamage(Attack attack) {
-        _diceRollerVm.SetInputAndRoll(attack.DamageDice);
+        var components = attack.DamageEntries
+            .Select(d => (d.DamageDice, (string?)d.DamageType.ToString()))
+            .ToList();
+        _diceRollerVm.RollLabeled($"{attack.Name} — Damage", components);
     }
 
     [RelayCommand]
@@ -117,14 +120,14 @@ public partial class NpcOverlayViewModel : ObservableObject {
     [RelayCommand]
     private void RollSpellAttack() {
         var bonus = SelectedNpc?.SpellAttackBonus ?? 0;
-        _diceRollerVm.SetInputAndRoll($"d20+{bonus}");
+        _diceRollerVm.RollLabeled("Spell — Attack", [($"d20+{bonus}", null)]);
     }
 
     [RelayCommand]
     private void RollSpellDamage(MonsterSpellInfo spellInfo) {
         var dice = spellInfo.EffectiveDamageDice;
         if (!string.IsNullOrEmpty(dice))
-            _diceRollerVm.SetInputAndRoll(dice);
+            _diceRollerVm.RollLabeled($"{spellInfo.Spell.Name} — Damage", [(dice, null)]);
     }
 
     private List<SpellLevelGroup> BuildSpellGroups() {

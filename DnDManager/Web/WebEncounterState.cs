@@ -14,8 +14,8 @@ public class WebCharacterDto {
     public string DisplayName { get; set; } = string.Empty;
     public int? Initiative { get; set; }
     public bool IsActive { get; set; }
-    public double? HpPercent { get; set; }
-    public string? HpCategory { get; set; }
+    public string? HpStatus { get; set; }
+    public string? HpColor { get; set; }
     public string? Conditions { get; set; }
 }
 

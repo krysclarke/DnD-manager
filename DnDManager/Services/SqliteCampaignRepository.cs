@@ -351,7 +351,7 @@ public class SqliteCampaignRepository : ICampaignRepository {
                 insertCmd.Parameters.AddWithValue("@RawInput", result.RawInput);
                 insertCmd.Parameters.AddWithValue("@IsValid", result.IsValid ? 1 : 0);
                 insertCmd.Parameters.AddWithValue("@ErrorReason", (object?)result.ErrorReason ?? DBNull.Value);
-                insertCmd.Parameters.AddWithValue("@ResultData", JsonSerializer.Serialize(result.PartResults));
+                insertCmd.Parameters.AddWithValue("@ResultData", JsonSerializer.Serialize(result));
                 insertCmd.Parameters.AddWithValue("@Timestamp", result.Timestamp.ToString("o"));
                 await insertCmd.ExecuteNonQueryAsync();
             }
@@ -374,13 +374,11 @@ public class SqliteCampaignRepository : ICampaignRepository {
 
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync()) {
-            var result = new DiceRollResult {
-                RawInput = reader.GetString(0),
-                IsValid = reader.GetInt32(1) != 0,
-                ErrorReason = reader.IsDBNull(2) ? null : reader.GetString(2),
-                PartResults = JsonSerializer.Deserialize<List<DicePartResult>>(reader.GetString(3)) ?? [],
-                Timestamp = DateTime.Parse(reader.GetString(4))
-            };
+            var result = DiceRollResult.FromStoredJson(reader.GetString(3));
+            result.RawInput = reader.GetString(0);
+            result.IsValid = reader.GetInt32(1) != 0;
+            result.ErrorReason = reader.IsDBNull(2) ? null : reader.GetString(2);
+            result.Timestamp = DateTime.Parse(reader.GetString(4));
             history.Add(result);
         }
 

@@ -12,10 +12,6 @@ public class Attack {
     public ObservableCollection<DamageEntry> DamageEntries { get; set; } = [];
     public string? EffectText { get; set; }
 
-    // Legacy support: flat DamageDice used by NPC overlay dice roller
-    public string DamageDice =>
-        DamageEntries.Count > 0 ? DamageEntries[0].DamageDice : string.Empty;
-
     public string ReachDisplay => AttackType == AttackType.Melee
         ? $"reach {Reach} ft."
         : RangeLong > 0

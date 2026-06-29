@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DnDManager.ViewModels"
+             x:Class="DnDManager.Views.ConditionsEditDialog"
+             x:DataType="vm:ConditionsEditDialogViewModel">
+
+    <StackPanel Spacing="12" MinWidth="360">
+        <TextBlock Text="{Binding TargetName, StringFormat='Conditions — {0}'}"
+                   FontSize="18" FontWeight="Bold"
+                   HorizontalAlignment="Center" />
+
+        <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ConditionToggleViewModel">
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,3">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                                        VerticalAlignment="Center">
+                                <CheckBox Content="{Binding Name}"
+                                          IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                          IsEnabled="{Binding IsEditable}" />
+                                <TextBlock Text="{Binding SourceLabel}"
+                                           VerticalAlignment="Center"
+                                           FontStyle="Italic"
+                                           Foreground="{DynamicResource DnDMutedText}"
+                                           IsVisible="{Binding SourceLabel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            </StackPanel>
+                            <NumericUpDown Grid.Column="1"
+                                           Value="{Binding ExhaustionLevel}"
+                                           Minimum="1" Maximum="6"
+                                           FormatString="0"
+                                           MinWidth="110"
+                                           IsVisible="{Binding IsExhaustion}"
+                                           IsEnabled="{Binding Selected}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Orientation="Horizontal" Spacing="12"
+                    HorizontalAlignment="Center" Margin="0,8,0,0">
+            <Button Content="OK" MinWidth="80"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding $parent[UserControl;1].((vm:EncounterTrackerViewModel)DataContext).ConfirmConditionsEditCommand}" />
+            <Button Content="Cancel" MinWidth="80"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding $parent[UserControl;1].((vm:EncounterTrackerViewModel)DataContext).CancelConditionsEditCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

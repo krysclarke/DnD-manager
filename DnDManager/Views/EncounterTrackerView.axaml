@@ -144,6 +144,19 @@
             </Border>
         </Border>
 
+        <!-- Conditions Editor Dialog Overlay -->
+        <Border Grid.RowSpan="2"
+                IsVisible="{Binding IsConditionsDialogOpen}"
+                Background="{DynamicResource DnDOverlayBg}">
+            <Border Background="{DynamicResource DnDDialogBg}"
+                    CornerRadius="8" Padding="16"
+                    MaxWidth="460" MaxHeight="600"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 4 16 0 #40000000">
+                <views:ConditionsEditDialog DataContext="{Binding PendingConditionsDialogVm}" />
+            </Border>
+        </Border>
+
         <!-- QR Code Overlay -->
         <Border Grid.RowSpan="2"
                 IsVisible="{Binding WebServerVm.IsQrCodeVisible}"
