@@ -3,13 +3,11 @@
              xmlns:vm="using:DnDManager.ViewModels"
              xmlns:models="using:DnDManager.Models"
              x:Class="DnDManager.Views.NpcOverlayView"
-             x:DataType="vm:NpcOverlayViewModel"
-             IsVisible="{Binding IsVisible}">
+             x:DataType="vm:NpcOverlayViewModel">
 
     <Border x:Name="OverlayRoot" Background="{DynamicResource DnDDialogBg}" CornerRadius="8"
-            Padding="16" Margin="4,0,0,0"
-            VerticalAlignment="Stretch"
-            MinWidth="280" MaxWidth="400">
+            Padding="16"
+            VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <DockPanel>
             <!-- Header (outside scroll) -->
             <Grid ColumnDefinitions="*,Auto" DockPanel.Dock="Top" Margin="0,0,0,12">

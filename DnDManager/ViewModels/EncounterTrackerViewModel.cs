@@ -345,6 +345,8 @@ public partial class EncounterTrackerViewModel : ObservableObject {
     private void SelectCharacter(CharacterViewModel charVm) {
         if (charVm.IsNpc) {
             NpcOverlayVm.ShowNpc(charVm);
+        } else {
+            NpcOverlayVm.ShowNpc(null);
         }
     }
 

@@ -49,25 +49,33 @@
         </WrapPanel>
 
         <!-- Row 1: Main content area -->
-        <Grid x:Name="ContentGrid" Grid.Row="1" ColumnDefinitions="3*,Auto,*">
-            <!-- Left column: character grid, splitter, campaign notes -->
-            <Grid x:Name="InnerGrid" Grid.Column="0" RowDefinitions="3*,Auto,*">
-                <!-- Row 0: Character grid + NPC side panel -->
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                    <views:CharacterGridView Grid.Column="0" DataContext="{Binding}" />
-                    <views:NpcOverlayView Grid.Column="1" DataContext="{Binding NpcOverlayVm}" />
+        <Grid x:Name="ContentGrid" Grid.Row="1" ColumnDefinitions="*,Auto,*">
+            <!-- Left content + auto-hiding NPC overlay pane -->
+            <SplitView Grid.Column="0"
+                       DisplayMode="Inline"
+                       PanePlacement="Right"
+                       OpenPaneLength="360"
+                       IsPaneOpen="{Binding NpcOverlayVm.IsVisible, Mode=OneWay}">
+                <SplitView.Pane>
+                    <views:NpcOverlayView DataContext="{Binding NpcOverlayVm}" />
+                </SplitView.Pane>
+
+                <!-- Main content: character grid, splitter, campaign notes -->
+                <Grid x:Name="InnerGrid" RowDefinitions="3*,Auto,*">
+                    <!-- Row 0: Character grid -->
+                    <views:CharacterGridView Grid.Row="0" DataContext="{Binding}" />
+
+                    <!-- Row 1: Horizontal splitter -->
+                    <GridSplitter Grid.Row="1" Height="4"
+                                  ResizeDirection="Rows"
+                                  Background="{DynamicResource DnDBorderBrush}" />
+
+                    <!-- Row 2: Campaign notes -->
+                    <views:CampaignNotesView Grid.Row="2"
+                                             DataContext="{Binding CampaignNotesVm}"
+                                             MinHeight="150" />
                 </Grid>
-
-                <!-- Row 1: Horizontal splitter -->
-                <GridSplitter Grid.Row="1" Height="4"
-                              ResizeDirection="Rows"
-                              Background="{DynamicResource DnDBorderBrush}" />
-
-                <!-- Row 2: Campaign notes -->
-                <views:CampaignNotesView Grid.Row="2"
-                                         DataContext="{Binding CampaignNotesVm}"
-                                         MinHeight="150" />
-            </Grid>
+            </SplitView>
 
             <!-- Vertical splitter between left content and dice roller -->
             <GridSplitter Grid.Column="1" Width="4"

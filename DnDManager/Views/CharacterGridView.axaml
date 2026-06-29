@@ -44,20 +44,32 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Name: show "Name (PlayerName)" for PCs -->
-                            <Panel Grid.Column="0" MinWidth="160" Margin="4,0">
-                                <TextBlock VerticalAlignment="Center"
-                                           IsVisible="{Binding IsPc}">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}{0} ({1})">
-                                            <Binding Path="Name" />
-                                            <Binding Path="PlayerName" />
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                                <TextBlock Text="{Binding Name}"
-                                           VerticalAlignment="Center"
-                                           IsVisible="{Binding IsNpc}" />
-                            </Panel>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                        MinWidth="160" Margin="4,0" VerticalAlignment="Center">
+                                <!-- Active-turn indicator (matches web display) -->
+                                <Border Width="16" VerticalAlignment="Center">
+                                    <TextBlock Text="▶" TextAlignment="Center"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource DnDAccent}"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding IsActive}"
+                                               ToolTip.Tip="Current turn" />
+                                </Border>
+                                <Panel>
+                                    <TextBlock VerticalAlignment="Center"
+                                               IsVisible="{Binding IsPc}">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} ({1})">
+                                                <Binding Path="Name" />
+                                                <Binding Path="PlayerName" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Name}"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding IsNpc}" />
+                                </Panel>
+                            </StackPanel>
 
                             <!-- Initiative -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal"
