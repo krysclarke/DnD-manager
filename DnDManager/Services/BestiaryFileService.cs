@@ -27,6 +27,9 @@ public class BestiaryFileService : IBestiaryFileService {
             Intelligence INTEGER NOT NULL DEFAULT 10,
             Wisdom INTEGER NOT NULL DEFAULT 10,
             Charisma INTEGER NOT NULL DEFAULT 10,
+            ProficiencyBonus INTEGER NOT NULL DEFAULT 2,
+            SavingThrowsJson TEXT,
+            SkillProficienciesJson TEXT,
             Senses TEXT NOT NULL DEFAULT '',
             Languages TEXT NOT NULL DEFAULT '',
             MultiattackDescription TEXT NOT NULL DEFAULT '',
@@ -48,6 +51,7 @@ public class BestiaryFileService : IBestiaryFileService {
             Id, Name, ArmorClass, ArmorDescription, HitPoints, HitDice,
             Size, Type, Subtype, Alignment, ChallengeRating, Speed,
             Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma,
+            ProficiencyBonus, SavingThrowsJson, SkillProficienciesJson,
             Senses, Languages, MultiattackDescription, SpecialAbilitiesJson,
             NonAttackActionsJson, AttacksJson, LegendaryActionsJson,
             LegendaryDescription, ReactionsJson, BonusActionsJson,
@@ -56,6 +60,7 @@ public class BestiaryFileService : IBestiaryFileService {
             @Id, @Name, @ArmorClass, @ArmorDescription, @HitPoints, @HitDice,
             @Size, @Type, @Subtype, @Alignment, @ChallengeRating, @Speed,
             @Strength, @Dexterity, @Constitution, @Intelligence, @Wisdom, @Charisma,
+            @ProficiencyBonus, @SavingThrowsJson, @SkillProficienciesJson,
             @Senses, @Languages, @MultiattackDescription, @SpecialAbilitiesJson,
             @NonAttackActionsJson, @AttacksJson, @LegendaryActionsJson,
             @LegendaryDescription, @ReactionsJson, @BonusActionsJson,
@@ -70,6 +75,9 @@ public class BestiaryFileService : IBestiaryFileService {
             Strength=excluded.Strength, Dexterity=excluded.Dexterity,
             Constitution=excluded.Constitution, Intelligence=excluded.Intelligence,
             Wisdom=excluded.Wisdom, Charisma=excluded.Charisma,
+            ProficiencyBonus=excluded.ProficiencyBonus,
+            SavingThrowsJson=excluded.SavingThrowsJson,
+            SkillProficienciesJson=excluded.SkillProficienciesJson,
             Senses=excluded.Senses, Languages=excluded.Languages,
             MultiattackDescription=excluded.MultiattackDescription,
             SpecialAbilitiesJson=excluded.SpecialAbilitiesJson,
@@ -88,6 +96,7 @@ public class BestiaryFileService : IBestiaryFileService {
             Name, ArmorClass, ArmorDescription, HitPoints, HitDice,
             Size, Type, Subtype, Alignment, ChallengeRating, Speed,
             Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma,
+            ProficiencyBonus, SavingThrowsJson, SkillProficienciesJson,
             Senses, Languages, MultiattackDescription, SpecialAbilitiesJson,
             NonAttackActionsJson, AttacksJson, LegendaryActionsJson,
             LegendaryDescription, ReactionsJson, BonusActionsJson,
@@ -96,6 +105,7 @@ public class BestiaryFileService : IBestiaryFileService {
             @Name, @ArmorClass, @ArmorDescription, @HitPoints, @HitDice,
             @Size, @Type, @Subtype, @Alignment, @ChallengeRating, @Speed,
             @Strength, @Dexterity, @Constitution, @Intelligence, @Wisdom, @Charisma,
+            @ProficiencyBonus, @SavingThrowsJson, @SkillProficienciesJson,
             @Senses, @Languages, @MultiattackDescription, @SpecialAbilitiesJson,
             @NonAttackActionsJson, @AttacksJson, @LegendaryActionsJson,
             @LegendaryDescription, @ReactionsJson, @BonusActionsJson,
@@ -108,6 +118,7 @@ public class BestiaryFileService : IBestiaryFileService {
             Name, ArmorClass, ArmorDescription, HitPoints, HitDice,
             Size, Type, Subtype, Alignment, ChallengeRating, Speed,
             Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma,
+            ProficiencyBonus, SavingThrowsJson, SkillProficienciesJson,
             Senses, Languages, MultiattackDescription, SpecialAbilitiesJson,
             NonAttackActionsJson, AttacksJson, LegendaryActionsJson,
             LegendaryDescription, ReactionsJson, BonusActionsJson,
@@ -116,6 +127,7 @@ public class BestiaryFileService : IBestiaryFileService {
             @Name, @ArmorClass, @ArmorDescription, @HitPoints, @HitDice,
             @Size, @Type, @Subtype, @Alignment, @ChallengeRating, @Speed,
             @Strength, @Dexterity, @Constitution, @Intelligence, @Wisdom, @Charisma,
+            @ProficiencyBonus, @SavingThrowsJson, @SkillProficienciesJson,
             @Senses, @Languages, @MultiattackDescription, @SpecialAbilitiesJson,
             @NonAttackActionsJson, @AttacksJson, @LegendaryActionsJson,
             @LegendaryDescription, @ReactionsJson, @BonusActionsJson,
@@ -130,6 +142,9 @@ public class BestiaryFileService : IBestiaryFileService {
             Strength=excluded.Strength, Dexterity=excluded.Dexterity,
             Constitution=excluded.Constitution, Intelligence=excluded.Intelligence,
             Wisdom=excluded.Wisdom, Charisma=excluded.Charisma,
+            ProficiencyBonus=excluded.ProficiencyBonus,
+            SavingThrowsJson=excluded.SavingThrowsJson,
+            SkillProficienciesJson=excluded.SkillProficienciesJson,
             Senses=excluded.Senses, Languages=excluded.Languages,
             MultiattackDescription=excluded.MultiattackDescription,
             SpecialAbilitiesJson=excluded.SpecialAbilitiesJson,
@@ -310,6 +325,7 @@ public class BestiaryFileService : IBestiaryFileService {
             Intelligence = reader.GetInt32(reader.GetOrdinal("Intelligence")),
             Wisdom = reader.GetInt32(reader.GetOrdinal("Wisdom")),
             Charisma = reader.GetInt32(reader.GetOrdinal("Charisma")),
+            ProficiencyBonus = reader.GetInt32(reader.GetOrdinal("ProficiencyBonus")),
             Senses = reader.GetString(reader.GetOrdinal("Senses")),
             Languages = reader.GetString(reader.GetOrdinal("Languages")),
             MultiattackDescription = reader.GetString(reader.GetOrdinal("MultiattackDescription")),
@@ -347,6 +363,9 @@ public class BestiaryFileService : IBestiaryFileService {
         if (!reader.IsDBNull(slugOrdinal))
             entry.Open5eSlug = reader.GetString(slugOrdinal);
 
+        entry.SavingThrows = DeserializeIntMapColumn(reader, "SavingThrowsJson");
+        entry.SkillProficiencies = DeserializeIntMapColumn(reader, "SkillProficienciesJson");
+
         return entry;
     }
 
@@ -368,6 +387,11 @@ public class BestiaryFileService : IBestiaryFileService {
         cmd.Parameters.AddWithValue("@Intelligence", entry.Intelligence);
         cmd.Parameters.AddWithValue("@Wisdom", entry.Wisdom);
         cmd.Parameters.AddWithValue("@Charisma", entry.Charisma);
+        cmd.Parameters.AddWithValue("@ProficiencyBonus", entry.ProficiencyBonus);
+        cmd.Parameters.AddWithValue("@SavingThrowsJson",
+            entry.SavingThrows.Count > 0 ? JsonSerializer.Serialize(entry.SavingThrows) : DBNull.Value);
+        cmd.Parameters.AddWithValue("@SkillProficienciesJson",
+            entry.SkillProficiencies.Count > 0 ? JsonSerializer.Serialize(entry.SkillProficiencies) : DBNull.Value);
         cmd.Parameters.AddWithValue("@Senses", entry.Senses);
         cmd.Parameters.AddWithValue("@Languages", entry.Languages);
         cmd.Parameters.AddWithValue("@MultiattackDescription", entry.MultiattackDescription);
@@ -418,6 +442,18 @@ public class BestiaryFileService : IBestiaryFileService {
         }
     }
 
+    private static Dictionary<string, int> DeserializeIntMapColumn(SqliteDataReader reader, string columnName) {
+        try {
+            var ordinal = reader.GetOrdinal(columnName);
+            if (reader.IsDBNull(ordinal)) return [];
+            return JsonSerializer.Deserialize<Dictionary<string, int>>(reader.GetString(ordinal)) ?? [];
+        } catch (ArgumentOutOfRangeException) {
+            return []; // Column doesn't exist yet (pre-migration DB)
+        } catch (JsonException) {
+            return [];
+        }
+    }
+
     private static List<NamedAbility> DeserializeNamedAbilitiesColumn(SqliteDataReader reader, string columnName) {
         try {
             var ordinal = reader.GetOrdinal(columnName);
@@ -441,7 +477,10 @@ public class BestiaryFileService : IBestiaryFileService {
             "LegendaryActionsJson TEXT",
             "LegendaryDescription TEXT NOT NULL DEFAULT ''",
             "ReactionsJson TEXT",
-            "BonusActionsJson TEXT"
+            "BonusActionsJson TEXT",
+            "ProficiencyBonus INTEGER NOT NULL DEFAULT 2",
+            "SavingThrowsJson TEXT",
+            "SkillProficienciesJson TEXT"
         ];
         foreach (var colDef in newColumns) {
             try {

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using DnDManager.Models;
 
 namespace DnDManager.ViewModels;
@@ -34,6 +35,7 @@ public partial class BestiaryEntryViewModel : ObservableObject {
     [ObservableProperty] private int _intelligence;
     [ObservableProperty] private int _wisdom;
     [ObservableProperty] private int _charisma;
+    [ObservableProperty] private int _proficiencyBonus;
     [ObservableProperty] private string _senses;
     [ObservableProperty] private string _languages;
     [ObservableProperty] private string _multiattackDescription;
@@ -44,6 +46,15 @@ public partial class BestiaryEntryViewModel : ObservableObject {
     private string _initiativeModifierText;
     [ObservableProperty] private string _source;
     [ObservableProperty] private string? _open5eSlug;
+
+    // Saving throw overrides (always 6 rows, STR…CHA) and skill proficiencies.
+    public ObservableCollection<SaveProficiencyViewModel> SaveProficiencies { get; } = [];
+    public ObservableCollection<SkillProficiencyViewModel> SkillProficiencies { get; } = [];
+
+    public IReadOnlyList<string> AllSkills => DndStats.Skills;
+
+    [ObservableProperty]
+    private string? _skillToAdd;
 
     public ObservableCollection<Attack> Attacks { get; } = [];
     public ObservableCollection<NamedAbility> SpecialAbilities { get; } = [];
@@ -59,6 +70,23 @@ public partial class BestiaryEntryViewModel : ObservableObject {
     public bool HasBonusActions => BonusActions.Count > 0;
 
     public static CreatureSize[] AvailableSizes { get; } = Enum.GetValues<CreatureSize>();
+
+    public bool HasSavingThrows => Entry.SavingThrows.Count > 0;
+    public string SavingThrowsDisplay => string.Join(", ", DndStats.AbilityCodes
+        .Where(c => Entry.SavingThrows.ContainsKey(c))
+        .Select(c => $"{c} {DndStats.FormatSigned(Entry.SavingThrows[c])}"));
+
+    public bool HasSkillProficiencies => Entry.SkillProficiencies.Count > 0;
+    public string SkillProficienciesDisplay => string.Join(", ", Entry.SkillProficiencies
+        .OrderBy(k => k.Key)
+        .Select(k => $"{k.Key} {DndStats.FormatSigned(k.Value)}"));
+
+    private void NotifyProficiencyDisplays() {
+        OnPropertyChanged(nameof(HasSavingThrows));
+        OnPropertyChanged(nameof(SavingThrowsDisplay));
+        OnPropertyChanged(nameof(HasSkillProficiencies));
+        OnPropertyChanged(nameof(SkillProficienciesDisplay));
+    }
 
     public string TypeDisplay =>
         string.IsNullOrEmpty(Subtype) ? $"{Size} {Type}" : $"{Size} {Type} ({Subtype})";
@@ -112,6 +140,7 @@ public partial class BestiaryEntryViewModel : ObservableObject {
         _intelligence = entry.Intelligence;
         _wisdom = entry.Wisdom;
         _charisma = entry.Charisma;
+        _proficiencyBonus = entry.ProficiencyBonus;
         _senses = entry.Senses;
         _languages = entry.Languages;
         _multiattackDescription = entry.MultiattackDescription;
@@ -133,6 +162,47 @@ public partial class BestiaryEntryViewModel : ObservableObject {
             Reactions.Add(reaction);
         foreach (var ba in entry.BonusActions)
             BonusActions.Add(ba);
+
+        PopulateProficiencies();
+    }
+
+    private void PopulateProficiencies() {
+        SaveProficiencies.Clear();
+        foreach (var code in DndStats.AbilityCodes) {
+            var text = Entry.SavingThrows.TryGetValue(code, out var v) ? v.ToString() : string.Empty;
+            SaveProficiencies.Add(new SaveProficiencyViewModel(code, text));
+        }
+
+        SkillProficiencies.Clear();
+        foreach (var kvp in Entry.SkillProficiencies.OrderBy(k => k.Key))
+            SkillProficiencies.Add(new SkillProficiencyViewModel(kvp.Key, kvp.Value.ToString()));
+
+        NotifyProficiencyDisplays();
+    }
+
+    private int ScoreFor(string code) => code switch {
+        "STR" => Strength,
+        "DEX" => Dexterity,
+        "CON" => Constitution,
+        "INT" => Intelligence,
+        "WIS" => Wisdom,
+        "CHA" => Charisma,
+        _ => 10
+    };
+
+    [RelayCommand]
+    private void AddSkill() {
+        if (string.IsNullOrWhiteSpace(SkillToAdd)) return;
+        if (SkillProficiencies.Any(s => s.Skill.Equals(SkillToAdd, StringComparison.OrdinalIgnoreCase)))
+            return;
+        var defaultBonus = DndStats.Modifier(ScoreFor(DndStats.DefaultAbilityFor(SkillToAdd))) + ProficiencyBonus;
+        SkillProficiencies.Add(new SkillProficiencyViewModel(SkillToAdd, defaultBonus.ToString()));
+        SkillToAdd = null;
+    }
+
+    [RelayCommand]
+    private void RemoveSkill(SkillProficiencyViewModel row) {
+        SkillProficiencies.Remove(row);
     }
 
     public void SyncToModel() {
@@ -153,6 +223,13 @@ public partial class BestiaryEntryViewModel : ObservableObject {
         Entry.Intelligence = Intelligence;
         Entry.Wisdom = Wisdom;
         Entry.Charisma = Charisma;
+        Entry.ProficiencyBonus = ProficiencyBonus;
+        Entry.SavingThrows = SaveProficiencies
+            .Where(s => int.TryParse(s.BonusText, out _))
+            .ToDictionary(s => s.Code, s => int.Parse(s.BonusText));
+        Entry.SkillProficiencies = SkillProficiencies
+            .ToDictionary(s => s.Skill, s => int.TryParse(s.BonusText, out var v) ? v : 0);
+        NotifyProficiencyDisplays();
         Entry.Senses = Senses;
         Entry.Languages = Languages;
         Entry.MultiattackDescription = MultiattackDescription;
@@ -186,6 +263,7 @@ public partial class BestiaryEntryViewModel : ObservableObject {
         Intelligence = Entry.Intelligence;
         Wisdom = Entry.Wisdom;
         Charisma = Entry.Charisma;
+        ProficiencyBonus = Entry.ProficiencyBonus;
         Senses = Entry.Senses;
         Languages = Entry.Languages;
         MultiattackDescription = Entry.MultiattackDescription;
@@ -218,6 +296,8 @@ public partial class BestiaryEntryViewModel : ObservableObject {
         BonusActions.Clear();
         foreach (var ba in Entry.BonusActions)
             BonusActions.Add(ba);
+
+        PopulateProficiencies();
 
         OnPropertyChanged(nameof(HasSpecialAbilities));
         OnPropertyChanged(nameof(HasNonAttackActions));

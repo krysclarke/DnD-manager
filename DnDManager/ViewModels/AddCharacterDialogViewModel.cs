@@ -114,6 +114,18 @@ public partial class AddCharacterDialogViewModel : ObservableObject {
         if (_bestiaryAttacks != null)
             npc.Attacks = _bestiaryAttacks;
 
+        if (SelectedBestiaryEntry is { } entry) {
+            npc.Strength = entry.Strength;
+            npc.Dexterity = entry.Dexterity;
+            npc.Constitution = entry.Constitution;
+            npc.Intelligence = entry.Intelligence;
+            npc.Wisdom = entry.Wisdom;
+            npc.Charisma = entry.Charisma;
+            npc.ProficiencyBonus = entry.ProficiencyBonus;
+            npc.SavingThrows = new Dictionary<string, int>(entry.SavingThrows);
+            npc.SkillProficiencies = new Dictionary<string, int>(entry.SkillProficiencies);
+        }
+
         npc.ParseLegendaryActionBudget();
 
         return npc;

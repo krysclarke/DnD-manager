@@ -54,7 +54,8 @@ public class SqliteCampaignRepository : ICampaignRepository {
                 LegendaryActionsJson TEXT,
                 LegendaryDescription TEXT NOT NULL DEFAULT '',
                 ReactionsJson TEXT,
-                BonusActionsJson TEXT
+                BonusActionsJson TEXT,
+                StatsJson TEXT
             );
 
             CREATE TABLE IF NOT EXISTS EncounterState (
@@ -100,7 +101,8 @@ public class SqliteCampaignRepository : ICampaignRepository {
             "ALTER TABLE Characters ADD COLUMN LegendaryActionsJson TEXT",
             "ALTER TABLE Characters ADD COLUMN LegendaryDescription TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE Characters ADD COLUMN ReactionsJson TEXT",
-            "ALTER TABLE Characters ADD COLUMN BonusActionsJson TEXT"
+            "ALTER TABLE Characters ADD COLUMN BonusActionsJson TEXT",
+            "ALTER TABLE Characters ADD COLUMN StatsJson TEXT"
         ];
         foreach (var migration in migrations) {
             try {
@@ -130,13 +132,13 @@ public class SqliteCampaignRepository : ICampaignRepository {
                          ArmorClass, MaxHitPoints, CurrentHitPoints, Conditions, Notes,
                          BestiaryEntryId, SortOrder, AttacksJson, MultiattackDescription, InitiativeModifier,
                          SpecialAbilitiesJson, NonAttackActionsJson, LegendaryActionsJson,
-                         LegendaryDescription, ReactionsJson, BonusActionsJson)
+                         LegendaryDescription, ReactionsJson, BonusActionsJson, StatsJson)
                     VALUES
                         (@Type, @Name, @PlayerName, @Initiative, @PassivePerception, @PassiveInvestigation,
                          @ArmorClass, @MaxHitPoints, @CurrentHitPoints, @Conditions, @Notes,
                          @BestiaryEntryId, @SortOrder, @AttacksJson, @MultiattackDescription, @InitiativeModifier,
                          @SpecialAbilitiesJson, @NonAttackActionsJson, @LegendaryActionsJson,
-                         @LegendaryDescription, @ReactionsJson, @BonusActionsJson)
+                         @LegendaryDescription, @ReactionsJson, @BonusActionsJson, @StatsJson)
                     """;
 
                 var type = character.CharacterType == CharacterType.PC ? "PC" : "NPC";
@@ -164,6 +166,7 @@ public class SqliteCampaignRepository : ICampaignRepository {
                     insertCmd.Parameters.AddWithValue("@LegendaryDescription", string.Empty);
                     insertCmd.Parameters.AddWithValue("@ReactionsJson", DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@BonusActionsJson", DBNull.Value);
+                    insertCmd.Parameters.AddWithValue("@StatsJson", DBNull.Value);
                 } else if (character is NonPlayerCharacter npc) {
                     insertCmd.Parameters.AddWithValue("@PlayerName", DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@PassivePerception", DBNull.Value);
@@ -185,6 +188,7 @@ public class SqliteCampaignRepository : ICampaignRepository {
                         npc.Reactions.Count > 0 ? JsonSerializer.Serialize(npc.Reactions) : DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@BonusActionsJson",
                         npc.BonusActions.Count > 0 ? JsonSerializer.Serialize(npc.BonusActions) : DBNull.Value);
+                    insertCmd.Parameters.AddWithValue("@StatsJson", npc.SerializeStats());
                 } else {
                     insertCmd.Parameters.AddWithValue("@PlayerName", DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@PassivePerception", DBNull.Value);
@@ -201,6 +205,7 @@ public class SqliteCampaignRepository : ICampaignRepository {
                     insertCmd.Parameters.AddWithValue("@LegendaryDescription", string.Empty);
                     insertCmd.Parameters.AddWithValue("@ReactionsJson", DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@BonusActionsJson", DBNull.Value);
+                    insertCmd.Parameters.AddWithValue("@StatsJson", DBNull.Value);
                 }
 
                 await insertCmd.ExecuteNonQueryAsync();
@@ -225,7 +230,7 @@ public class SqliteCampaignRepository : ICampaignRepository {
                    ArmorClass, MaxHitPoints, CurrentHitPoints, Conditions, Notes,
                    BestiaryEntryId, SortOrder, AttacksJson, MultiattackDescription, InitiativeModifier,
                    SpecialAbilitiesJson, NonAttackActionsJson, LegendaryActionsJson,
-                   LegendaryDescription, ReactionsJson, BonusActionsJson
+                   LegendaryDescription, ReactionsJson, BonusActionsJson, StatsJson
             FROM Characters
             ORDER BY SortOrder
             """;
@@ -284,6 +289,8 @@ public class SqliteCampaignRepository : ICampaignRepository {
                     npc.Reactions = JsonSerializer.Deserialize<List<NamedAbility>>(reader.GetString(20)) ?? [];
                 if (!reader.IsDBNull(21))
                     npc.BonusActions = JsonSerializer.Deserialize<List<NamedAbility>>(reader.GetString(21)) ?? [];
+                if (!reader.IsDBNull(22))
+                    npc.ApplyStats(reader.GetString(22));
 
                 npc.ParseLegendaryActionBudget();
 

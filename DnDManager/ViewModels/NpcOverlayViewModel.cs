@@ -14,6 +14,36 @@ public partial class NpcOverlayViewModel : ObservableObject {
     [ObservableProperty]
     private CharacterViewModel? _selectedNpc;
 
+    // Saving throws / ability checks
+    public IReadOnlyList<string> Abilities => DndStats.AbilityCodes;
+    public IReadOnlyList<string> Skills => DndStats.Skills;
+    public IReadOnlyList<D20RollMode> RollModes { get; } =
+        [D20RollMode.Normal, D20RollMode.Advantage, D20RollMode.Disadvantage];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SaveModifierDisplay))]
+    private string _selectedSaveAbility = "DEX";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CheckModifierDisplay))]
+    private string _selectedSkill = "Perception";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CheckModifierDisplay))]
+    private string _selectedCheckAbility = "WIS";
+
+    [ObservableProperty]
+    private D20RollMode _selectedRollMode = D20RollMode.Normal;
+
+    private NonPlayerCharacter? Npc => SelectedNpc?.Character as NonPlayerCharacter;
+
+    public string SaveModifierDisplay => DndStats.FormatSigned(SaveModifier());
+    public string CheckModifierDisplay => DndStats.FormatSigned(CheckModifier());
+
+    partial void OnSelectedSkillChanged(string value) {
+        SelectedCheckAbility = DndStats.DefaultAbilityFor(value);
+    }
+
     public string NpcName => SelectedNpc?.Name ?? string.Empty;
     public int NpcAc => SelectedNpc?.ArmorClass ?? 0;
     public int NpcCurrentHp => SelectedNpc?.CurrentHitPoints ?? 0;
@@ -76,6 +106,57 @@ public partial class NpcOverlayViewModel : ObservableObject {
         OnPropertyChanged(nameof(NpcHasSpells));
         _cachedSpellGroups = null;
         OnPropertyChanged(nameof(NpcSpellGroups));
+        OnPropertyChanged(nameof(SaveModifierDisplay));
+        OnPropertyChanged(nameof(CheckModifierDisplay));
+    }
+
+    private int SaveModifier() {
+        if (Npc is not { } npc) return 0;
+        return npc.SavingThrows.TryGetValue(SelectedSaveAbility, out var total)
+            ? total
+            : DndStats.Modifier(npc.AbilityScore(SelectedSaveAbility));
+    }
+
+    private int CheckModifier() {
+        if (Npc is not { } npc) return 0;
+        var proficient = npc.SkillProficiencies.TryGetValue(SelectedSkill, out var skillTotal);
+        // Use the stored total only when rolling against the skill's standard ability;
+        // otherwise recompute from the chosen ability so stat overrides work correctly.
+        if (proficient && SelectedCheckAbility == DndStats.DefaultAbilityFor(SelectedSkill))
+            return skillTotal;
+        return DndStats.Modifier(npc.AbilityScore(SelectedCheckAbility)) + (proficient ? npc.ProficiencyBonus : 0);
+    }
+
+    private static string ModeFlag(D20RollMode mode) => mode switch {
+        D20RollMode.Advantage => ">",
+        D20RollMode.Disadvantage => "<",
+        _ => string.Empty
+    };
+
+    private static string ModeSuffix(D20RollMode mode) => mode switch {
+        D20RollMode.Advantage => " (Advantage)",
+        D20RollMode.Disadvantage => " (Disadvantage)",
+        _ => string.Empty
+    };
+
+    private string BuildD20Notation(int modifier) {
+        var flag = ModeFlag(SelectedRollMode);
+        var mod = modifier == 0 ? string.Empty : DndStats.FormatSigned(modifier);
+        return $"d20{flag}{mod}";
+    }
+
+    [RelayCommand]
+    private void RollSave() {
+        if (Npc is null) return;
+        var label = $"{NpcName} — {SelectedSaveAbility} Save{ModeSuffix(SelectedRollMode)}";
+        _diceRollerVm.RollLabeled(label, [(BuildD20Notation(SaveModifier()), null)]);
+    }
+
+    [RelayCommand]
+    private void RollCheck() {
+        if (Npc is null) return;
+        var label = $"{NpcName} — {SelectedSkill} ({SelectedCheckAbility}) Check{ModeSuffix(SelectedRollMode)}";
+        _diceRollerVm.RollLabeled(label, [(BuildD20Notation(CheckModifier()), null)]);
     }
 
     private void OnNpcPropertyChanged(object? sender, PropertyChangedEventArgs e) {

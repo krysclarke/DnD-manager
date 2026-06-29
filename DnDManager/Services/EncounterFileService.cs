@@ -23,7 +23,8 @@ public class EncounterFileService : IEncounterFileService {
             SortOrder INTEGER NOT NULL,
             AttacksJson TEXT,
             MultiattackDescription TEXT NOT NULL DEFAULT '',
-            InitiativeModifier INTEGER
+            InitiativeModifier INTEGER,
+            StatsJson TEXT
         );
         """;
 
@@ -51,12 +52,12 @@ public class EncounterFileService : IEncounterFileService {
             Type, Name, PlayerName, Initiative,
             PassivePerception, PassiveInvestigation, ArmorClass,
             MaxHitPoints, CurrentHitPoints, Conditions, Notes,
-            BestiaryEntryId, SortOrder, AttacksJson, MultiattackDescription, InitiativeModifier
+            BestiaryEntryId, SortOrder, AttacksJson, MultiattackDescription, InitiativeModifier, StatsJson
         ) VALUES (
             @Type, @Name, @PlayerName, @Initiative,
             @PassivePerception, @PassiveInvestigation, @ArmorClass,
             @MaxHitPoints, @CurrentHitPoints, @Conditions, @Notes,
-            @BestiaryEntryId, @SortOrder, @AttacksJson, @MultiattackDescription, @InitiativeModifier
+            @BestiaryEntryId, @SortOrder, @AttacksJson, @MultiattackDescription, @InitiativeModifier, @StatsJson
         );
         """;
 
@@ -77,6 +78,7 @@ public class EncounterFileService : IEncounterFileService {
         await using var createCmd = connection.CreateCommand();
         createCmd.CommandText = CreateCharactersTableSql;
         await createCmd.ExecuteNonQueryAsync();
+        await EnsureCharacterColumnsAsync(connection);
 
         await using var deleteCmd = connection.CreateCommand();
         deleteCmd.CommandText = "DELETE FROM Characters;";
@@ -112,6 +114,7 @@ public class EncounterFileService : IEncounterFileService {
             cmd.CommandText = CreateCharactersTableSql;
             await cmd.ExecuteNonQueryAsync();
         }
+        await EnsureCharacterColumnsAsync(connection);
         await using (var cmd = connection.CreateCommand()) {
             cmd.CommandText = CreateDiceHistoryTableSql;
             await cmd.ExecuteNonQueryAsync();
@@ -149,6 +152,18 @@ public class EncounterFileService : IEncounterFileService {
         return new EncounterFileData(characters, diceHistory, notes, caret);
     }
 
+    private static async Task EnsureCharacterColumnsAsync(SqliteConnection connection) {
+        // Add columns introduced after the original schema to pre-existing files.
+        string[] migrations = ["ALTER TABLE Characters ADD COLUMN StatsJson TEXT"];
+        foreach (var migration in migrations) {
+            try {
+                await using var cmd = connection.CreateCommand();
+                cmd.CommandText = migration;
+                await cmd.ExecuteNonQueryAsync();
+            } catch (SqliteException) { /* column already exists */ }
+        }
+    }
+
     private async Task WriteCharactersAsync(SqliteConnection connection, List<Character> characters) {
         foreach (var character in characters) {
             await using var insertCmd = connection.CreateCommand();
@@ -172,6 +187,7 @@ public class EncounterFileService : IEncounterFileService {
                 insertCmd.Parameters.AddWithValue("@AttacksJson", DBNull.Value);
                 insertCmd.Parameters.AddWithValue("@MultiattackDescription", string.Empty);
                 insertCmd.Parameters.AddWithValue("@InitiativeModifier", DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@StatsJson", DBNull.Value);
             } else if (character is NonPlayerCharacter npc) {
                 insertCmd.Parameters.AddWithValue("@PlayerName", DBNull.Value);
                 insertCmd.Parameters.AddWithValue("@PassivePerception", DBNull.Value);
@@ -186,6 +202,7 @@ public class EncounterFileService : IEncounterFileService {
                         : DBNull.Value);
                 insertCmd.Parameters.AddWithValue("@MultiattackDescription", npc.MultiattackDescription);
                 insertCmd.Parameters.AddWithValue("@InitiativeModifier", (object?)npc.InitiativeModifier ?? DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@StatsJson", npc.SerializeStats());
             } else {
                 insertCmd.Parameters.AddWithValue("@PlayerName", DBNull.Value);
                 insertCmd.Parameters.AddWithValue("@PassivePerception", DBNull.Value);
@@ -196,6 +213,7 @@ public class EncounterFileService : IEncounterFileService {
                 insertCmd.Parameters.AddWithValue("@AttacksJson", DBNull.Value);
                 insertCmd.Parameters.AddWithValue("@MultiattackDescription", string.Empty);
                 insertCmd.Parameters.AddWithValue("@InitiativeModifier", DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@StatsJson", DBNull.Value);
             }
 
             await insertCmd.ExecuteNonQueryAsync();
@@ -280,6 +298,12 @@ public class EncounterFileService : IEncounterFileService {
                     var initModOrdinal = reader.GetOrdinal("InitiativeModifier");
                     if (!reader.IsDBNull(initModOrdinal))
                         npc.InitiativeModifier = reader.GetInt32(initModOrdinal);
+                } catch (IndexOutOfRangeException) { /* old file without column */ }
+
+                try {
+                    var statsOrdinal = reader.GetOrdinal("StatsJson");
+                    if (!reader.IsDBNull(statsOrdinal))
+                        npc.ApplyStats(reader.GetString(statsOrdinal));
                 } catch (IndexOutOfRangeException) { /* old file without column */ }
 
                 character = npc;

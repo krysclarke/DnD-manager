@@ -19,6 +19,11 @@ public class BestiaryEntry {
     public int Intelligence { get; set; } = 10;
     public int Wisdom { get; set; } = 10;
     public int Charisma { get; set; } = 10;
+    public int ProficiencyBonus { get; set; } = 2;
+    /// <summary>Proficient/overridden saving throws: ability code ("STR"…) → total save bonus.</summary>
+    public Dictionary<string, int> SavingThrows { get; set; } = [];
+    /// <summary>Skill proficiencies: skill display name → total skill bonus.</summary>
+    public Dictionary<string, int> SkillProficiencies { get; set; } = [];
     public string Senses { get; set; } = string.Empty;
     public string Languages { get; set; } = string.Empty;
     public string SpecialAbilitiesJson { get; set; } = string.Empty;

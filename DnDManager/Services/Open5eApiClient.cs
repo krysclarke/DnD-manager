@@ -251,7 +251,43 @@ public class Open5eApiClient : IOpen5eApiClient {
             }
         }
 
+        // Proficiency bonus (derived from challenge rating)
+        entry.ProficiencyBonus = DndStats.ProficiencyBonusForCr(entry.ChallengeRating);
+
+        // Parse saving throw proficiencies (e.g. "dexterity_save": 5)
+        foreach (var code in DndStats.AbilityCodes) {
+            var field = AbilityField(code) + "_save";
+            if (monster.TryGetProperty(field, out var saveVal) && saveVal.ValueKind == JsonValueKind.Number)
+                entry.SavingThrows[code] = saveVal.GetInt32();
+        }
+
+        // Parse skill proficiencies (the "skills" object: skill name → bonus)
+        if (monster.TryGetProperty("skills", out var skills) && skills.ValueKind == JsonValueKind.Object) {
+            foreach (var prop in skills.EnumerateObject()) {
+                if (prop.Value.ValueKind != JsonValueKind.Number) continue;
+                var canonical = NormalizeSkillName(prop.Name);
+                if (canonical is not null)
+                    entry.SkillProficiencies[canonical] = prop.Value.GetInt32();
+            }
+        }
+
         return entry;
+    }
+
+    private static string AbilityField(string code) => code switch {
+        "STR" => "strength",
+        "DEX" => "dexterity",
+        "CON" => "constitution",
+        "INT" => "intelligence",
+        "WIS" => "wisdom",
+        "CHA" => "charisma",
+        _ => string.Empty
+    };
+
+    private static string? NormalizeSkillName(string open5eKey) {
+        // Open5e keys may use underscores or spaces, any casing (e.g. "sleight_of_hand").
+        var normalized = open5eKey.Replace('_', ' ').Trim();
+        return DndStats.Skills.FirstOrDefault(s => s.Equals(normalized, StringComparison.OrdinalIgnoreCase));
     }
 
     private static string GetStringOrEmpty(JsonElement element, string property) {
