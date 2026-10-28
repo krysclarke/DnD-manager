@@ -17,23 +17,12 @@ A cross-platform desktop application for managing Dungeons & Dragons campaigns, 
 |-----------|------------|
 | Language | C# |
 | Runtime | .NET 10.0 |
-| UI Framework | Avalonia 12.0.5 |
+| UI Framework | Avalonia 12.1.4 |
 | Architecture | MVVM (CommunityToolkit.Mvvm) |
 | Database | SQLite (Microsoft.Data.Sqlite) |
 | Web Server | Embedded Kestrel + SignalR |
 | Markdown | Markdig |
 | QR Codes | QRCoder |
-
-## Installation
-
-Download pre-built binaries for your platform from the [Releases](../../releases) page — no .NET SDK required.
-
-| Platform | Binary |
-|----------|--------|
-| Linux x64 | `DnDManager` |
-| Windows x64 | `DnDManager.exe` |
-| macOS x64 | `DnDManager` |
-| macOS ARM64 | `DnDManager` |
 
 ## Getting Started
 
